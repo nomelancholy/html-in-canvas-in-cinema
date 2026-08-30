@@ -42,7 +42,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
       <ol class="guide-steps">
         <li><span>01</span><div><strong>Chrome Canary 149 이상을 실행</strong><p>현재 실험 API는 일반 Chrome보다 Canary에서 먼저 제공됩니다.</p></div></li>
         <li><span>02</span><div><strong>아래 설정 주소를 주소창에 붙여넣기</strong><code>chrome://flags/#canvas-draw-element</code></div></li>
-        <li><span>03</span><div><strong>Canvas Draw Element를 Enabled로 변경</strong><p>화면 아래의 Relaunch 버튼으로 Chrome을 다시 시작하세요.</p></div></li>
+        <li><span>03</span><div><strong>HTML-in-Canvas를 Enabled로 변경</strong><p>화면 아래의 Relaunch 버튼으로 Chrome을 다시 시작하세요.</p></div></li>
         <li><span>04</span><div><strong>이 페이지를 다시 열기</strong><p>좌측 상태가 NATIVE로 바뀌면 실제 DOM이 WebGL 텍스처로 들어간 상태입니다.</p></div></li>
       </ol>
       <div class="guide-actions">

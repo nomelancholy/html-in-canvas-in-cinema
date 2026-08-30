@@ -9,7 +9,7 @@ npm install
 npm run dev:web
 ```
 
-Chrome Canary 149 이상에서 `chrome://flags/#canvas-draw-element`를 활성화하면 네이티브 API를 사용합니다. 화면 우측 상단의 `?` 버튼에서도 같은 설정 순서와 현재 지원 상태를 확인할 수 있습니다.
+Chrome Canary 149 이상에서 `chrome://flags/#canvas-draw-element`를 열고 **HTML-in-Canvas** 항목을 활성화하면 네이티브 API를 사용합니다. 화면 우측 상단의 `?` 버튼에서도 같은 설정 순서와 현재 지원 상태를 확인할 수 있습니다.
 
 일반 브라우저에서는 HTML DOM을 스냅샷 텍스처로 변환해 동일한 WebGL 메시·셰이더 연출을 보여줍니다. 따라서 공개 웹 버전도 바로 체험할 수 있고, 실험 기능을 켠 브라우저에서는 별도 스냅샷 없이 실제 DOM을 `texElementImage2D()`로 직접 올립니다.
 
