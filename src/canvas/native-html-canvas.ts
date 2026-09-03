@@ -103,6 +103,8 @@ export class NativeHtmlCanvas {
   #mutationObserver: MutationObserver | null = null;
   #snapshotPending = false;
   #snapshotQueued = false;
+  #sourceWidth: number;
+  #sourceHeight: number;
 
   constructor(canvas: HTMLCanvasElement, element: HTMLElement, mode: HtmlTextureMode = "native") {
     const gl = canvas.getContext("webgl2", { alpha: true, antialias: true, premultipliedAlpha: true });
@@ -110,6 +112,8 @@ export class NativeHtmlCanvas {
     this.#canvas = canvas;
     this.#element = element;
     this.#mode = mode;
+    this.#sourceWidth = Math.max(1, Math.round(element.offsetWidth || 720));
+    this.#sourceHeight = Math.max(1, Math.round(element.offsetHeight || 420));
     this.#gl = gl;
     this.#locations = this.#createProgram();
     const mesh = this.#createMesh(42, 24);
@@ -296,8 +300,8 @@ export class NativeHtmlCanvas {
     host.style.position = "fixed";
     host.style.left = "-10000px";
     host.style.top = "0";
-    host.style.width = "720px";
-    host.style.height = "420px";
+    host.style.width = `${this.#sourceWidth}px`;
+    host.style.height = `${this.#sourceHeight}px`;
     host.style.overflow = "hidden";
     host.style.pointerEvents = "none";
     host.style.zIndex = "-1";
@@ -309,8 +313,8 @@ export class NativeHtmlCanvas {
     source.style.position = "relative";
     source.style.left = "0";
     source.style.top = "0";
-    source.style.width = "720px";
-    source.style.height = "420px";
+    source.style.width = `${this.#sourceWidth}px`;
+    source.style.height = `${this.#sourceHeight}px`;
     source.style.transform = "none";
     source.style.opacity = "1";
     source.style.pointerEvents = "none";
@@ -341,8 +345,8 @@ export class NativeHtmlCanvas {
     this.#snapshotSource.className = this.#element.className;
     this.#snapshotSource.innerHTML = this.#element.innerHTML;
     void toCanvas(this.#snapshotSource, {
-      width: 720,
-      height: 420,
+      width: this.#sourceWidth,
+      height: this.#sourceHeight,
       pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
       cacheBust: false,
     }).then((snapshot) => {
@@ -391,7 +395,7 @@ export class NativeHtmlCanvas {
     mat4.rotateX(model, model, (0.5 - this.#pointer.y) * 0.24 - 0.04);
     mat4.rotateY(model, model, (this.#pointer.x - 0.5) * 0.42);
     mat4.rotateZ(model, model, (this.#pointer.x - 0.5) * 0.035);
-    mat4.scale(model, model, [1.72, 1, 1]);
+    mat4.scale(model, model, [this.#sourceWidth / this.#sourceHeight, 1, 1]);
 
     const reflectionModel = mat4.clone(model);
     mat4.translate(reflectionModel, reflectionModel, [0, -2.18, -0.2]);
