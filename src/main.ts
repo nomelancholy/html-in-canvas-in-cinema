@@ -6,30 +6,18 @@ import {
   supportsWebGlSnapshot,
 } from "./canvas/native-html-canvas";
 import { CinemaScene } from "./scenes/cinema-scene";
-import { mountQuiz } from "./quiz";
+import { mountCurseLetter } from "./curse-letter";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <main class="shell">
-    <header class="topbar">
-      <a class="brand" href="/" aria-label="처음으로">HIC / CINEMA</a>
-      <p>HTML × CANVAS PLAYGROUND</p>
-      <div class="topbar-actions">
-        <a class="source" href="https://github.com/WICG/html-in-canvas" target="_blank" rel="noreferrer">WICG PROPOSAL ↗</a>
-        <button class="guide-trigger" type="button" aria-label="HTML-in-Canvas 설정 가이드 열기">?</button>
-      </div>
-    </header>
     <section class="stage-wrap">
       <canvas id="stage" layoutsubtree aria-label="HTML 요소가 그려진 애니메이션 Canvas">
         <article id="html-source" class="html-card"></article>
       </canvas>
       <article id="fallback-source" class="html-card fallback-html-card" hidden></article>
-      <div class="caption" aria-hidden="true"><span>01</span><span>MOVE YOUR IDEAS</span></div>
-      <p id="runtime-status" class="runtime-status">API 확인 중</p>
+      <button class="guide-trigger" type="button" aria-label="HTML-in-Canvas 설정 가이드 열기">?</button>
+      <p id="runtime-status" class="runtime-status" hidden>API 확인 중</p>
     </section>
-    <footer>
-      <p>VITE / ELECTRON / HTML-IN-CANVAS</p>
-      <p>새 장면은 <code>src/scenes</code>에 추가하세요.</p>
-    </footer>
     <dialog id="setup-guide" class="setup-guide" aria-labelledby="guide-title">
       <div class="guide-head">
         <div>
@@ -71,8 +59,8 @@ let renderer: NativeHtmlCanvas | CanvasStage;
 
 if (nativeSupported) {
   document.documentElement.dataset.htmlInCanvas = "native";
-  runtimeStatus.textContent = "NATIVE · WebGL texElementImage2D";
-  mountQuiz(htmlSource);
+  runtimeStatus.textContent = "실제 HTML을 비추는 중 · NATIVE";
+  mountCurseLetter(htmlSource);
   try {
     renderer = new NativeHtmlCanvas(canvas, htmlSource);
   } catch (error) {
@@ -82,14 +70,14 @@ if (nativeSupported) {
   }
 } else {
   fallbackSource.hidden = false;
-  mountQuiz(fallbackSource);
+  mountCurseLetter(fallbackSource);
   if (supportsWebGlSnapshot()) {
     document.documentElement.dataset.htmlInCanvas = "snapshot";
-    runtimeStatus.textContent = "WEB · WebGL snapshot texture";
+    runtimeStatus.textContent = "한지에 비추는 중 · WEBGL";
     renderer = new NativeHtmlCanvas(canvas, fallbackSource, "snapshot");
   } else {
     document.documentElement.dataset.htmlInCanvas = "fallback";
-    runtimeStatus.textContent = "FALLBACK · DOM overlay";
+    runtimeStatus.textContent = "먹글씨를 펼치는 중 · DOM";
     renderer = new CanvasStage(canvas, new CinemaScene());
     renderer.start();
   }

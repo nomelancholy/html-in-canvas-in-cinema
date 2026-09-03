@@ -29,10 +29,10 @@ const vertexSource = `#version 300 es
   void main() {
     vec3 point = aPosition;
     float pointerDistance = distance(aUv, uPointer);
-    float pulse = sin(pointerDistance * 24.0 - uTime * 5.0) * exp(-pointerDistance * 5.0);
-    float curtain = sin(aUv.y * 8.0 + uTime * 1.25) * 0.018;
-    point.z += curtain + pulse * (0.035 + uTransition * 0.16);
-    point.x += sin(aUv.y * 3.141592) * uTransition * 0.08;
+    float pulse = sin(pointerDistance * 25.0 - uTime * 4.0) * exp(-pointerDistance * 5.2);
+    float paperWave = sin(aUv.y * 8.0 + uTime * 0.72) * 0.009;
+    point.z += paperWave + pulse * (0.018 + uTransition * 0.18);
+    point.x += sin(aUv.y * 18.0 + uTime) * 0.018 * uTransition;
     vUv = aUv;
     vDepth = point.z;
     gl_Position = uMvp * vec4(point, 1.0);
@@ -49,21 +49,28 @@ const fragmentSource = `#version 300 es
   in float vDepth;
   out vec4 outColor;
 
+  float hash(vec2 value) {
+    return fract(sin(dot(value, vec2(127.1, 311.7))) * 43758.5453123);
+  }
+
   void main() {
     vec2 center = vUv - 0.5;
     float radius = length(center);
     vec2 direction = radius > 0.001 ? center / radius : vec2(0.0);
-    float shockwave = sin(radius * 55.0 - uTime * 9.0) * 0.009 * uTransition;
-    vec2 warpedUv = clamp(vUv + direction * shockwave, 0.002, 0.998);
-    float split = 0.006 * uTransition;
+    float timeSlice = floor(uTime * 8.0);
+    float filmJitter = (hash(vec2(timeSlice, 17.0)) - 0.5) * 0.0018;
+    float shockwave = sin(radius * 48.0 - uTime * 7.0) * 0.01 * uTransition;
+    vec2 warpedUv = clamp(vUv + direction * shockwave + vec2(filmJitter, 0.0), 0.002, 0.998);
     vec4 base = texture(uTexture, warpedUv);
-    base.r = texture(uTexture, clamp(warpedUv + direction * split, 0.002, 0.998)).r;
-    base.b = texture(uTexture, clamp(warpedUv - direction * split, 0.002, 0.998)).b;
-    float scanline = 0.985 + sin(vUv.y * 900.0 + uTime * 2.0) * 0.015;
+    float grain = hash(floor(vUv * vec2(360.0, 240.0)) + timeSlice);
+    float flicker = 0.955 + hash(vec2(timeSlice, 9.0)) * 0.045;
+    float inkBloom = smoothstep(0.22, 0.0, abs(radius - fract(uTime * 0.08))) * uTransition;
     float edge = smoothstep(0.0, 0.035, vUv.x) * smoothstep(0.0, 0.035, vUv.y)
       * smoothstep(0.0, 0.035, 1.0 - vUv.x) * smoothstep(0.0, 0.035, 1.0 - vUv.y);
-    vec3 light = vec3(1.0, 0.82, 0.72) * max(vDepth, 0.0) * 0.45;
-    outColor = vec4((base.rgb * scanline + light) * edge, base.a * edge * uOpacity);
+    vec3 moonTint = vec3(0.93, 0.95, 0.9);
+    vec3 vermilion = vec3(0.24, 0.008, 0.004) * (inkBloom * 0.7 + max(vDepth, 0.0) * 0.25);
+    vec3 cursed = base.rgb * moonTint * (flicker + (grain - 0.5) * 0.045) + vermilion;
+    outColor = vec4(cursed * edge, base.a * edge * uOpacity);
   }
 `;
 
@@ -116,7 +123,7 @@ export class NativeHtmlCanvas {
     this.#element.addEventListener("pointermove", this.#handlePointerMove);
     this.#canvas.addEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.addEventListener("pointerleave", this.#handlePointerLeave);
-    this.#element.addEventListener("quiz:transition", this.#handleTransition);
+    this.#element.addEventListener("canvas:disturb", this.#handleTransition);
     this.#resize();
     if (mode === "native") {
       this.#canvas.requestPaint();
@@ -135,7 +142,7 @@ export class NativeHtmlCanvas {
     this.#element.removeEventListener("pointermove", this.#handlePointerMove);
     this.#canvas.removeEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.removeEventListener("pointerleave", this.#handlePointerLeave);
-    this.#element.removeEventListener("quiz:transition", this.#handleTransition);
+    this.#element.removeEventListener("canvas:disturb", this.#handleTransition);
     this.#mutationObserver?.disconnect();
     this.#snapshotHost?.remove();
     if (this.#mode === "snapshot") this.#element.style.opacity = "";
@@ -319,7 +326,7 @@ export class NativeHtmlCanvas {
       childList: true,
       characterData: true,
       attributes: true,
-      attributeFilter: ["class", "disabled", "data-scene", "data-locked"],
+      attributeFilter: ["class", "disabled", "value", "placeholder", "data-revealed"],
     });
     this.#queueSnapshot();
   }

@@ -1,6 +1,6 @@
 # HTML in Canvas in Cinema
 
-실제 DOM 요소를 WebGL 텍스처로 올려 3D 공간에서 조작하는 실험적 HTML-in-Canvas 프로젝트입니다. 웹과 Electron 데스크톱 앱 두 경로를 함께 제공합니다.
+사용자가 한 문장을 적을 때마다 낡은 한지 위의 금기문이 붉게 드러나는 한국 괴담풍 HTML-in-Canvas 실험입니다. 실제 입력 DOM을 WebGL 텍스처로 올려 종이의 움직임, 먹 번짐, 필름 떨림을 표현하며 웹과 Electron 데스크톱 앱 두 경로를 함께 제공합니다.
 
 ## 시작하기
 
@@ -48,10 +48,10 @@ src/
 │   ├── native-html-canvas.ts # texElementImage2D 기반 WebGL 3D 렌더러
 │   └── stage.ts          # 반응형 크기, DPR, 애니메이션 루프 관리
 ├── scenes/
-│   └── cinema-scene.ts   # 첫 번째 예제 장면
-├── main.ts               # 앱 진입점
-├── quiz.ts               # 한 문제와 다음 장면 전환 상태
-└── styles.css            # 페이지 UI
+│   └── cinema-scene.ts       # WebGL 미지원 환경의 배경 장면
+├── curse-letter.ts           # 입력과 열 개의 금기문 공개 상태
+├── main.ts                   # 앱 진입점
+└── styles.css                # 한지·먹·주사 기반 화면과 UI
 ```
 
 새 실험은 `Scene` 인터페이스를 구현해 `src/scenes`에 추가하고, `main.ts`에서 `CanvasStage`에 전달하면 됩니다.
@@ -60,7 +60,7 @@ src/
 
 - 지원 환경에서는 `layoutsubtree`, `texElementImage2D()`, `getElementTransform()`을 사용합니다.
 - 네이티브 API 미지원 환경에서도 WebGL 2가 있으면 HTML 스냅샷 텍스처 모드로 같은 연출을 유지합니다.
-- WebGL 2까지 없는 환경에서만 동일한 퀴즈 DOM을 Canvas 위의 오버레이로 표시합니다.
+- WebGL 2까지 없는 환경에서만 동일한 편지 DOM을 Canvas 위의 오버레이로 표시합니다.
 - 외부 이미지나 폰트를 섞으면 브라우저의 CORS 정책으로 Canvas 픽셀 읽기나 내보내기가 제한될 수 있습니다.
 - Canvas의 실제 픽셀 크기는 최대 2배 DPR로 자동 조정되어 고해상도 화면에서도 선명하게 표시됩니다.
 - HTML-in-Canvas API는 아직 제안 단계이므로 이름과 동작이 변경될 수 있습니다.
