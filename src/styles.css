@@ -113,11 +113,11 @@ a { color: inherit; text-decoration: none; }
 .curse-surface.is-struck .scan-tear { animation: paper-haunt .62s steps(3); }
 
 /* The texture now contains a separate paper and two sealed wooden boxes. */
-.html-card.curse-surface { width: 960px; height: 440px; overflow: visible; clip-path: none; background: transparent; box-shadow: none; }
+.html-card.curse-surface { width: 1050px; height: 440px; overflow: visible; clip-path: none; background: transparent; box-shadow: none; }
 .html-card.curse-surface::before,
 .html-card.curse-surface::after,
 .curse-content::before { display: none; }
-.curse-content { display: grid; grid-template-columns: 700px 210px; gap: 36px; align-items: center; height: 440px; padding: 0; }
+.curse-content { display: grid; grid-template-columns: 700px 300px; gap: 40px; align-items: center; height: 440px; padding: 0; }
 .paper-sheet { position: relative; width: 700px; height: 420px; overflow: hidden;
   clip-path: polygon(1% 0, 13% .7%, 27% 0, 42% .5%, 60% 0, 79% .6%, 99% 0, 100% 17%, 99.4% 35%, 100% 54%, 99.2% 77%, 100% 99%, 82% 99.3%, 64% 100%, 44% 99.4%, 24% 100%, 0 99%, .6% 80%, 0 61%, .7% 43%, 0 21%);
   background:
@@ -137,8 +137,8 @@ a { color: inherit; text-decoration: none; }
   animation: omen-turn 42s linear infinite; mix-blend-mode: multiply; }
 .letter-field li { display: block; padding-left: 3px; }
 .letter-field li p { font-size: 10.5px; }
-.relic-boxes { display: grid; gap: 34px; place-items: center; }
-.relic-box { position: relative; width: 210px; height: 140px; padding: 0; border: 0; outline: 0; background: transparent;
+.relic-boxes { display: grid; grid-template-rows: repeat(2, 198px); gap: 24px; place-items: stretch; height: 420px; }
+.relic-box { position: relative; width: 300px; height: 198px; padding: 0; border: 0; outline: 0; background: transparent;
   cursor: not-allowed; filter: grayscale(.28) brightness(.68); transition: filter .35s ease, transform .35s ease; }
 .screen-frame { position: absolute; inset: 0; overflow: hidden; border: 1px solid rgba(128,119,101,.88);
   clip-path: polygon(1px 0, calc(100% - 2px) 1px, 100% calc(100% - 2px), calc(100% - 1px) 100%, 2px calc(100% - 1px), 0 2px);
@@ -162,17 +162,18 @@ a { color: inherit; text-decoration: none; }
 .screen-static::after { content: ""; position: absolute; inset: 0; opacity: .26;
   background: linear-gradient(90deg, transparent 14%, rgba(207,211,204,.24) 16%, transparent 18% 76%, rgba(189,197,190,.18) 78%, transparent 80%);
   animation: crt-roll 3.1s steps(7) infinite; }
-.box-seal { position: absolute; z-index: 5; top: -11px; left: 76px; width: 58px; height: 162px;
+.box-seal { position: absolute; z-index: 5; top: -11px; left: 115px; width: 70px; height: 220px;
   background: url("./assets/talisman-hanji.png") center / 100% 100% no-repeat;
   filter: saturate(1.08) brightness(1.18) contrast(1.05) drop-shadow(2px 4px 3px rgba(0,0,0,.7));
   transform: rotate(-2.2deg); transform-origin: 50% 14%; }
 .box-seal::after { content: ""; position: absolute; top: 1px; left: 8px; width: 23px; height: 8px; opacity: .32;
   border-radius: 50%; background: #21140d; filter: blur(4px); mix-blend-mode: multiply; }
-.relic-box[data-box="1"] .box-seal { left: 75px; transform: rotate(2.7deg) scaleX(.96); }
+.relic-box[data-box="1"] .box-seal { left: 114px; transform: rotate(2.7deg) scaleX(.96); }
 .box-seal.is-dissolving { animation: seal-dissolve 1.05s cubic-bezier(.45,0,.55,1) forwards; }
 .box-seal.is-gone { opacity: 0; visibility: hidden; }
-.curse-surface.boxes-unlocked .relic-box { cursor: pointer; filter: grayscale(.06) brightness(.94); }
-.curse-surface.boxes-unlocked .relic-box:not(.is-opening):hover { transform: translateY(-2px) scale(1.018); filter: brightness(1.08); }
+.relic-box:not(:disabled) { cursor: pointer; filter: grayscale(.06) brightness(.94); }
+.relic-box:not(:disabled):not(.is-opening):hover { transform: translateY(-2px) scale(1.018); filter: brightness(1.08); }
+.curse-surface.is-refilling .paper-sheet { animation: paper-refill .76s ease-in-out both; }
 .relic-box.is-opening .screen-frame { border-color: rgba(210,213,207,.82); box-shadow: inset 0 0 0 2px rgba(28,30,29,.9), 0 0 22px rgba(190,199,191,.24); }
 .relic-box.is-opening .screen-static { opacity: .78; }
 
@@ -295,6 +296,11 @@ footer code { color: #bcc1cc; font-family: inherit; }
   34% { opacity: .76; filter: saturate(.82) brightness(1.24) contrast(.92) blur(.25px) drop-shadow(1px 3px 3px rgba(0,0,0,.42)); }
   70% { opacity: .32; filter: saturate(.34) brightness(1.34) contrast(.72) blur(1.2px); }
   100% { opacity: 0; filter: saturate(0) brightness(1.5) contrast(.55) blur(2.6px); }
+}
+@keyframes paper-refill {
+  0%, 100% { opacity: 1; filter: none; transform: translateX(0); }
+  42% { opacity: .12; filter: sepia(.65) blur(1.8px); transform: translateX(-3px); }
+  58% { opacity: .16; filter: sepia(.5) blur(1.2px); transform: translateX(2px); }
 }
 @keyframes portal-roll { to { transform: translateY(70%); } }
 @keyframes signal-breathe { to { opacity: .3; } }
