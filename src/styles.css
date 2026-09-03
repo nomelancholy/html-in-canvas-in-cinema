@@ -139,14 +139,14 @@ a { color: inherit; text-decoration: none; }
 .letter-field li p { font-size: 10.5px; }
 .relic-boxes { display: grid; grid-template-rows: repeat(2, 198px); gap: 24px; place-items: stretch; height: 420px; }
 .relic-box { position: relative; width: 300px; height: 198px; padding: 0; border: 0; outline: 0; background: transparent;
-  cursor: not-allowed; perspective: 900px; transform-style: preserve-3d; filter: grayscale(.28) brightness(.68);
+  cursor: not-allowed; perspective: 900px; transform-style: preserve-3d; filter: grayscale(.08) brightness(.96) contrast(1.08);
   transition: filter .35s ease, transform .35s ease; }
 .screen-frame { position: absolute; inset: 0; overflow: visible; border: 1px solid rgba(128,119,101,.88); border-radius: 2px 1px 3px 1px;
   transform-style: preserve-3d;
   background:
-    repeating-linear-gradient(7deg, rgba(54,34,20,.08) 0 1px, transparent 1px 6px),
-    linear-gradient(102deg, #867454, #baa47b 18%, #8f7b58 54%, #b19b72 82%, #746146);
-  box-shadow: inset 0 0 0 2px #4b3928, inset 0 0 15px rgba(34,18,9,.82), 0 10px 27px rgba(0,0,0,.58); }
+    repeating-linear-gradient(6deg, rgba(177,92,43,.08) 0 1px, transparent 1px 7px),
+    linear-gradient(102deg, #25140e, #6d2f1b 20%, #331b13 57%, #743a21 82%, #1b100c);
+  box-shadow: inset 0 0 0 2px #160e0a, inset 0 0 0 5px #4a2316, inset 0 0 16px #050302, 0 11px 29px rgba(0,0,0,.68); }
 .screen-frame::before { content: ""; position: absolute; z-index: 2; inset: 5px; border: 1px solid rgba(75,49,29,.72);
   box-shadow: inset 0 0 0 2px rgba(27,18,12,.92); pointer-events: none; }
 .screen-frame::after { content: ""; position: absolute; z-index: 3; inset: 1px; pointer-events: none;
@@ -167,29 +167,26 @@ a { color: inherit; text-decoration: none; }
   will-change: transform; }
 .case-lid-face,
 .case-lid-back { position: absolute; inset: 0; display: block; border: 1px solid rgba(71,43,25,.78); backface-visibility: hidden; }
-.case-lid-face {
+.case-lid-face { background:
+    linear-gradient(rgba(37,14,8,.08), rgba(24,8,5,.24)),
+    url("./assets/antique-chest-face-v2.jpg") center / cover no-repeat;
+  z-index: 2; box-shadow: inset 0 0 0 2px rgba(21,10,7,.72), inset 0 0 22px rgba(15,6,3,.58), 0 5px 11px rgba(0,0,0,.48); }
+.case-lid-face::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(177,113,67,.18);
+  box-shadow: inset 0 0 18px rgba(13,5,3,.28); }
+.case-lid-back { z-index: 1; opacity: 0; transform: rotateX(180deg) translateZ(1px);
   background:
-    radial-gradient(ellipse at 19% 26%, rgba(61,35,18,.18), transparent 22%),
-    radial-gradient(ellipse at 76% 67%, rgba(69,38,19,.14), transparent 25%),
-    repeating-linear-gradient(6deg, rgba(54,34,20,.06) 0 1px, transparent 1px 7px),
-    linear-gradient(98deg, #887552, #b39d72 22%, #927b55 58%, #ab9368 82%, #786344);
-  box-shadow: inset 0 0 0 3px rgba(80,52,31,.38), inset 0 0 20px rgba(46,25,12,.62), 0 4px 9px rgba(0,0,0,.34); }
-.case-lid-face::before { content: ""; position: absolute; inset: 13px 17px; border: 1px solid rgba(78,48,27,.36);
-  background: linear-gradient(90deg, transparent 49.4%, rgba(69,40,23,.21) 50%, transparent 50.6%); box-shadow: inset 0 0 14px rgba(57,30,15,.16); }
-.case-lid-back { transform: rotateX(180deg) translateZ(1px);
-  background:
-    radial-gradient(circle at 50% 52%, transparent 0 24px, rgba(88,31,22,.22) 25px 26px, transparent 28px),
-    repeating-linear-gradient(7deg, rgba(57,35,19,.08) 0 1px, transparent 1px 6px),
-    linear-gradient(102deg, #6d5a3e, #927b56 48%, #675338);
-  box-shadow: inset 0 0 0 4px rgba(49,31,18,.48), inset 0 0 28px rgba(24,14,8,.78); }
+    radial-gradient(circle at 50% 52%, transparent 0 24px, rgba(83,26,17,.2) 25px 26px, transparent 28px),
+    repeating-linear-gradient(7deg, rgba(123,57,29,.1) 0 1px, transparent 1px 6px),
+    linear-gradient(102deg, #24130d, #5b2a1a 48%, #1c100c);
+  box-shadow: inset 0 0 0 4px rgba(18,10,7,.7), inset 0 0 28px rgba(4,2,1,.84); }
 .case-lid-edge { position: absolute; right: 0; bottom: -10px; left: 0; height: 11px; display: block; border: 1px solid #432d1b;
   background: linear-gradient(#8d744e, #49321f); transform: rotateX(-90deg); transform-origin: 50% 0; }
 .case-hinges { position: absolute; z-index: 7; top: 2px; right: 30px; left: 30px; display: flex; justify-content: space-between; pointer-events: none; }
-.case-hinges i { width: 35px; height: 7px; border: 1px solid #49371f; border-radius: 3px; background: linear-gradient(#9a814c, #4c391f);
-  box-shadow: inset 0 0 2px #26170e, 0 1px 2px rgba(0,0,0,.6); }
-.case-latch { position: absolute; z-index: 8; bottom: -7px; left: calc(50% - 16px); width: 32px; height: 15px; border: 1px solid #49351f;
-  border-radius: 2px 2px 4px 4px; background: linear-gradient(90deg, #5e482b, #a1844b 48%, #574126);
-  box-shadow: inset 0 0 4px #2e1c10, 0 2px 3px rgba(0,0,0,.45); transform-origin: 50% 0; }
+.case-hinges i { width: 35px; height: 7px; border: 1px solid #211b18; border-radius: 3px; background: linear-gradient(#665b51, #211d1a);
+  box-shadow: inset 0 0 2px #080706, 0 1px 2px rgba(0,0,0,.7); }
+.case-latch { position: absolute; z-index: 8; bottom: -7px; left: calc(50% - 16px); width: 32px; height: 15px; border: 1px solid #1d1916;
+  border-radius: 2px 2px 4px 4px; background: linear-gradient(90deg, #29241f, #67594b 48%, #211d19);
+  box-shadow: inset 0 0 4px #080706, 0 2px 3px rgba(0,0,0,.55); transform-origin: 50% 0; }
 .case-dust { position: absolute; z-index: 8; inset: 12px; overflow: hidden; pointer-events: none; }
 .case-dust i { --dust-x: 50%; --dust-drift: -8px; position: absolute; left: var(--dust-x); bottom: 20%; width: 2px; height: 2px;
   border-radius: 50%; background: #c5ae7f; box-shadow: 0 0 3px rgba(207,184,137,.7); opacity: 0; }
@@ -207,7 +204,7 @@ a { color: inherit; text-decoration: none; }
 .relic-box[data-box="1"] .box-seal { left: 114px; transform: rotate(2.7deg) scaleX(.96); }
 .box-seal.is-dissolving { animation: seal-dissolve 1.05s cubic-bezier(.45,0,.55,1) forwards; }
 .box-seal.is-gone { opacity: 0; visibility: hidden; }
-.relic-box:not(:disabled) { cursor: pointer; filter: grayscale(.06) brightness(.94); }
+.relic-box:not(:disabled) { cursor: pointer; filter: grayscale(.03) brightness(1.03) contrast(1.08); }
 .relic-box:not(:disabled):not(.is-opening):hover { transform: translateY(-2px) scale(1.018); filter: brightness(1.08); }
 .curse-surface.is-refilling .paper-sheet { animation: paper-refill .76s ease-in-out both; }
 .relic-box.is-opening .screen-frame { border-color: rgba(159,139,100,.86); }

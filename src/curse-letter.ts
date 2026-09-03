@@ -99,6 +99,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     const frame = box.querySelector<HTMLElement>(".screen-frame");
     const screen = box.querySelector<HTMLElement>(".screen-static");
     const lid = box.querySelector<HTMLElement>(".case-lid");
+    const lidBack = box.querySelector<HTMLElement>(".case-lid-back");
     const latch = box.querySelector<HTMLElement>(".case-latch");
     const dust = Array.from(box.querySelectorAll<HTMLElement>(".case-dust i"));
     if (!frame || !screen || !lid || !latch) {
@@ -106,25 +107,29 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
       return;
     }
 
-    const duration = 920;
+    const duration = 1560;
     const dustDrift = [-8, 7, -4, 8, -11, 5];
     const startedAt = performance.now();
     const paintFrameByFrame = (now: number): void => {
       const progress = Math.min(1, (now - startedAt) / duration);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const settle = Math.sin(progress * Math.PI * 3) * (1 - progress) * 1.8;
-      const latchProgress = Math.min(1, Math.max(0, (progress - .08) / .42));
+      const liftProgress = Math.min(1, Math.max(0, (progress - .22) / .78));
+      const eased = liftProgress < .5
+        ? 4 * liftProgress ** 3
+        : 1 - ((-2 * liftProgress + 2) ** 3) / 2;
+      const settle = Math.sin(Math.max(0, liftProgress - .72) * Math.PI * 7) * (1 - liftProgress) * .8;
+      const latchProgress = Math.min(1, Math.max(0, (progress - .025) / .25));
 
-      lid.style.transform = `translateY(${-11 * eased}px) translateZ(${8 * eased}px) rotateX(${108 * eased}deg)`;
-      lid.style.filter = `brightness(${1 - eased * .4})`;
-      screen.style.opacity = String(.25 + eased * .57);
+      lid.style.transform = `translateY(${-8 * eased}px) translateZ(${Math.sin(eased * Math.PI) * 15}px) rotateX(${104 * eased}deg)`;
+      lid.style.filter = `brightness(${1 - eased * .34})`;
+      if (lidBack) lidBack.style.opacity = String(Math.min(1, Math.max(0, (eased - .72) / .2)));
+      screen.style.opacity = String(.14 + eased * .68);
       screen.style.filter = `brightness(${.38 + eased * .62}) blur(${2.5 * (1 - eased)}px)`;
       screen.style.transform = `scale(${.982 + eased * .018})`;
       latch.style.opacity = String(1 - latchProgress);
       latch.style.transform = `translateY(${17 * latchProgress}px) rotate(${13 * latchProgress}deg)`;
       frame.style.transform = `translateY(${settle}px) scale(${1 + Math.sin(progress * Math.PI) * .003})`;
       dust.forEach((particle, index) => {
-        const particleProgress = Math.min(1, Math.max(0, (progress - index * .055) / .62));
+        const particleProgress = Math.min(1, Math.max(0, (liftProgress - index * .055) / .62));
         particle.style.opacity = String(Math.sin(particleProgress * Math.PI) * .42);
         particle.style.transform = `translate(${dustDrift[index] * particleProgress}px, ${-42 * particleProgress}px) scale(${.5 + particleProgress * .75})`;
       });
