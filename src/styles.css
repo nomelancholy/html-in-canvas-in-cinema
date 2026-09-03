@@ -181,6 +181,61 @@ a { color: inherit; text-decoration: none; }
 .relic-bell::before { content: ""; position: absolute; top: -10px; left: 14px; width: 14px; height: 13px; border: 3px solid #795522; border-bottom: 0; border-radius: 10px 10px 0 0; }
 .relic-bell::after { content: ""; position: absolute; bottom: -8px; left: 16px; width: 10px; height: 10px; border-radius: 50%; background: #5d3d17; }
 .relic-box.is-open .relic-bell { transform: translateY(0) scale(1); }
+
+/* Sealed, late-20th-century CRT receivers. */
+.relic-boxes { gap: 42px; }
+.relic-box { width: 160px; height: 126px; filter: grayscale(.35) brightness(.62); }
+.relic-box[data-box="0"],
+.relic-box[data-box="1"] { transform: rotate(0); }
+.crt-case { position: absolute; inset: 0; border: 2px solid #15120f; border-radius: 15px 13px 11px 14px;
+  background: linear-gradient(145deg, #625b4f, #302d29 52%, #191817); box-shadow: inset 0 0 0 4px #403d37, 9px 13px 28px rgba(0,0,0,.65); }
+.crt-case::before { content: ""; position: absolute; right: 7px; bottom: -7px; left: 7px; height: 8px; border-radius: 0 0 8px 8px;
+  background: #171513; box-shadow: 0 3px 5px #000; }
+.crt-glass { position: absolute; top: 10px; left: 10px; width: 119px; height: 96px; overflow: hidden; border: 5px solid #1d1b19;
+  border-radius: 43% / 12%; background: radial-gradient(ellipse at 48% 45%, #34413c, #151b19 56%, #050606 88%);
+  box-shadow: inset 0 0 21px #000, 0 0 0 1px #716b60; }
+.crt-glass::before { content: ""; position: absolute; inset: 0; opacity: .34;
+  background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(196,208,190,.16) 3px, transparent 4px),
+    linear-gradient(115deg, rgba(255,255,255,.13), transparent 23% 75%, rgba(255,255,255,.05)); }
+.crt-glass::after { content: ""; position: absolute; inset: 0; opacity: .18;
+  background: linear-gradient(90deg, transparent 20%, #c7cabb 22%, transparent 24% 66%, #bbc3b7 69%, transparent 71%);
+  animation: crt-roll 2.7s steps(8) infinite; }
+.crt-glass > i { position: absolute; top: 26px; left: 47px; width: 18px; height: 48px; opacity: .18; border-radius: 50% 50% 42% 42%;
+  background: #020303; filter: blur(3px); animation: crt-shadow 4.8s ease-in-out infinite alternate; }
+.crt-controls { position: absolute; top: 18px; right: 8px; bottom: 15px; width: 19px; border-left: 1px solid rgba(0,0,0,.55); }
+.crt-controls i { position: absolute; top: 7px; left: 3px; width: 13px; height: 13px; border: 2px dotted #171513; border-radius: 50%; background: #464138; box-shadow: inset 0 0 3px #090909; }
+.crt-controls i:nth-child(2) { top: 30px; }
+.crt-controls::after { content: ""; position: absolute; right: 2px; bottom: 5px; left: 3px; height: 28px;
+  background: repeating-linear-gradient(0deg, #151412 0 2px, transparent 2px 5px); }
+.box-seal { top: -9px; bottom: -6px; left: 51px; width: 31px; transform: rotate(-3deg);
+  background: linear-gradient(90deg, #ae8f39, #d2bb60 46%, #9a7b2d); filter: saturate(.72) brightness(.85); }
+.relic-box[data-box="1"] .box-seal { left: 74px; transform: rotate(4deg); }
+.curse-surface.boxes-unlocked .relic-box { filter: grayscale(.12) brightness(.82); }
+.curse-surface.boxes-unlocked .relic-box:not(.is-opening):hover { transform: translateY(-2px) scale(1.025); filter: brightness(1); }
+.relic-box.is-opening .crt-glass { background: #d5d7c9; box-shadow: 0 0 24px rgba(214,221,207,.48), inset 0 0 18px white; }
+.relic-box.is-opening .crt-glass::after { opacity: .72; }
+
+.video-portal { --portal-from-x: 34vw; --portal-from-y: 0px; --portal-from-scale: .18;
+  position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 6vw; opacity: 0;
+  background: rgba(0,0,0,.93); pointer-events: none; transition: opacity .42s ease; }
+.video-portal[hidden] { display: none; }
+.video-portal.is-open { opacity: 1; pointer-events: auto; }
+.portal-frame { position: relative; width: min(960px, 82vw); aspect-ratio: 16 / 9; padding: 18px; border: 2px solid #171512; border-radius: 28px;
+  background: linear-gradient(145deg, #4d4941, #242320 58%, #11110f); box-shadow: inset 0 0 0 7px #302e2a, 0 40px 110px #000;
+  opacity: 0; transform: translate(var(--portal-from-x), var(--portal-from-y)) scale(var(--portal-from-scale)) rotateY(-12deg);
+  transform-origin: center; transition: transform .78s cubic-bezier(.16,.84,.22,1), opacity .38s ease; }
+.video-portal.is-open .portal-frame { opacity: 1; transform: translate(0,0) scale(1) rotateY(0); }
+.portal-frame video { display: block; width: 100%; height: 100%; border: 6px solid #0c0d0c; border-radius: 5% / 7%; background: #050606;
+  object-fit: cover; filter: grayscale(.92) sepia(.18) contrast(1.25) brightness(.72); }
+.portal-glass { position: absolute; inset: 24px; overflow: hidden; pointer-events: none; border-radius: 5% / 7%;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(213,220,205,.08) 4px, transparent 5px),
+    radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.72) 100%); mix-blend-mode: screen; }
+.portal-glass::after { content: ""; position: absolute; inset: -20% 0; opacity: .18;
+  background: linear-gradient(transparent 42%, rgba(235,239,225,.32) 49%, transparent 56%); animation: portal-roll 4.2s linear infinite; }
+.portal-signal { position: absolute; right: 29px; bottom: 27px; width: 6px; height: 6px; border-radius: 50%; background: #8a1812;
+  box-shadow: 0 0 9px #a51a12; animation: signal-breathe 1.8s ease-in-out infinite alternate; }
+.portal-close { position: absolute; top: -42px; right: 0; width: 31px; height: 31px; padding: 0; border: 1px solid #47433d;
+  border-radius: 50%; background: #0b0b0a; color: #a39c90; cursor: pointer; font: 19px serif; }
 .scene-content { position: relative; z-index: 1; height: 100%; transition: opacity .28s ease, translate .28s ease, filter .28s ease; }
 .html-card.is-leaving .scene-content { opacity: 0; translate: 0 -12px; filter: blur(8px); }
 .html-card.is-entering .scene-content { opacity: 0; translate: 0 14px; }
@@ -255,6 +310,10 @@ footer code { color: #bcc1cc; font-family: inherit; }
   67% { opacity: .18; transform: translate(-1px, 0); filter: sepia(1); }
   100% { opacity: 0; transform: none; }
 }
+@keyframes crt-roll { 0% { transform: translateX(-16px); } 50% { transform: translateX(18px); } 100% { transform: translateX(-8px); } }
+@keyframes crt-shadow { to { transform: translateX(8px) scaleX(.86); opacity: .1; } }
+@keyframes portal-roll { to { transform: translateY(70%); } }
+@keyframes signal-breathe { to { opacity: .3; } }
 @keyframes scan-tear {
   0% { opacity: .3; clip-path: inset(18% 0 76%); transform: translateX(-18px); }
   35% { opacity: .16; clip-path: inset(62% 0 30%); transform: translateX(26px); }

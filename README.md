@@ -1,6 +1,6 @@
 # HTML in Canvas in Cinema
 
-사용자가 한 문장을 적을 때마다 낡은 한지 위의 금기문이 붉게 드러나는 한국 괴담풍 HTML-in-Canvas 실험입니다. 열 문장이 완성되면 두 나무궤의 부적이 차례로 떨어지고, 봉인이 모두 풀린 뒤에만 궤를 열 수 있습니다. 실제 입력과 버튼 DOM을 WebGL 텍스처로 올려 종이의 움직임, 먹 번짐, 필름 떨림을 표현하며 웹과 Electron 데스크톱 앱 두 경로를 함께 제공합니다.
+사용자가 한 문장을 적을 때마다 낡은 한지 위의 금기문이 붉게 드러나는 한국 괴담풍 HTML-in-Canvas 실험입니다. 다섯 문장이 완성되면 두 CRT 화면의 부적이 차례로 떨어지고, 봉인이 모두 풀린 뒤에만 화면을 열 수 있습니다. 실제 입력과 버튼 DOM을 WebGL 텍스처로 올려 종이의 움직임, 먹 번짐, 필름 떨림을 표현하며 웹과 Electron 데스크톱 앱 두 경로를 함께 제공합니다.
 
 ## 시작하기
 
@@ -12,6 +12,13 @@ npm run dev:web
 Chrome Canary 149 이상에서 `chrome://flags/#canvas-draw-element`를 열고 **HTML-in-Canvas** 항목을 활성화하면 네이티브 API를 사용합니다. 화면 우측 상단의 `?` 버튼에서도 같은 설정 순서와 현재 지원 상태를 확인할 수 있습니다.
 
 일반 브라우저에서는 HTML DOM을 스냅샷 텍스처로 변환해 동일한 WebGL 메시·셰이더 연출을 보여줍니다. 따라서 공개 웹 버전도 바로 체험할 수 있고, 실험 기능을 켠 브라우저에서는 별도 스냅샷 없이 실제 DOM을 `texElementImage2D()`로 직접 올립니다.
+
+열린 CRT는 실제 `<video>` 요소입니다. 현재는 로컬 Canvas로 만든 임시 송출 영상을 재생하며, WebRTC 등에서 받은 원격 `MediaStream`은 다음처럼 채널별로 연결할 수 있습니다.
+
+```ts
+window.hicVideoPortal?.setRemoteStream(0, remoteStream);
+window.hicVideoPortal?.setRemoteStream(1, anotherRemoteStream);
+```
 
 ## Electron으로 실행
 
@@ -49,8 +56,9 @@ src/
 │   └── stage.ts          # 반응형 크기, DPR, 애니메이션 루프 관리
 ├── scenes/
 │   └── cinema-scene.ts       # WebGL 미지원 환경의 배경 장면
-├── curse-letter.ts           # 입력과 열 개의 금기문 공개 상태
+├── curse-letter.ts           # 입력과 다섯 개의 금기문 공개 상태
 ├── main.ts                   # 앱 진입점
+├── video-portal.ts           # 중앙 영상 전환과 MediaStream 연결
 └── styles.css                # 한지·먹·주사 기반 화면과 UI
 ```
 

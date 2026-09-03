@@ -1,13 +1,8 @@
 const LETTER = [
   "이 글을 본 자여, 이미 네 이름은 적혔느니라.",
   "초하루 달이 뜨기 전까지 이 종이를 불사르지 말라.",
-  "산 자의 불에 태우면 그 화가 네 집으로 돌아오리라.",
   "자정이 지나 문밖에서 방울 소리가 세 번 울려도 내다보지 말라.",
   "죽은 자가 네 이름을 불러도 결코 대답하지 말라.",
-  "닭이 울기 전 붉은 실이 끊어지면 네 그림자를 돌아보지 말라.",
-  "그림자가 너보다 먼저 움직이는 날, 네 액이 시작되리라.",
-  "한 사람의 원한으로 맺은 것이니 한 사람의 목숨으로는 풀리지 아니한다.",
-  "칠 일 안에 주인을 찾아 돌려놓지 못하면 피붙이에게까지 화가 미치리라.",
   "부디 명심하라. 이 글은 저주를 내리는 글이 아니라, 이미 내린 저주를 알리는 글이니라.",
 ] as const;
 
@@ -33,15 +28,19 @@ const surfaceMarkup = (): string => `
       <div class="red-thread" aria-hidden="true"></div>
       <div class="scan-tear" aria-hidden="true"></div>
     </section>
-    <div class="relic-boxes" aria-label="부적으로 봉인된 궤 두 개">
-      <button class="relic-box" type="button" data-box="0" disabled aria-label="첫 번째 봉인된 궤">
-        <span class="box-body"><i class="relic relic-thread"></i></span>
-        <span class="box-lid"></span>
+    <div class="relic-boxes" aria-label="부적으로 봉인된 화면 두 개">
+      <button class="relic-box" type="button" data-box="0" disabled aria-label="첫 번째 봉인된 화면">
+        <span class="crt-case" aria-hidden="true">
+          <span class="crt-glass"><i></i></span>
+          <span class="crt-controls"><i></i><i></i></span>
+        </span>
         <span class="box-seal" aria-hidden="true"><i></i><i></i><i></i></span>
       </button>
-      <button class="relic-box" type="button" data-box="1" disabled aria-label="두 번째 봉인된 궤">
-        <span class="box-body"><i class="relic relic-bell"></i></span>
-        <span class="box-lid"></span>
+      <button class="relic-box" type="button" data-box="1" disabled aria-label="두 번째 봉인된 화면">
+        <span class="crt-case" aria-hidden="true">
+          <span class="crt-glass"><i></i></span>
+          <span class="crt-controls"><i></i><i></i></span>
+        </span>
         <span class="box-seal" aria-hidden="true"><i></i><i></i><i></i></span>
       </button>
     </div>
@@ -114,7 +113,14 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   const handleBoxClick = (event: MouseEvent): void => {
     const box = (event.target as Element).closest<HTMLButtonElement>(".relic-box");
     if (!box || box.disabled || !root.classList.contains("boxes-unlocked")) return;
-    box.classList.toggle("is-open");
+    box.classList.add("is-opening");
+    const bounds = box.getBoundingClientRect();
+    window.dispatchEvent(new CustomEvent("portal:open", {
+      detail: {
+        channel: Number(box.dataset.box ?? 0),
+        rect: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
+      },
+    }));
     root.dispatchEvent(new CustomEvent("canvas:disturb"));
     requestPaint();
   };

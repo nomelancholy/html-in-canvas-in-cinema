@@ -7,6 +7,7 @@ import {
 } from "./canvas/native-html-canvas";
 import { CinemaScene } from "./scenes/cinema-scene";
 import { mountCurseLetter } from "./curse-letter";
+import { mountVideoPortal } from "./video-portal";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <main class="shell">
@@ -15,6 +16,14 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
         <article id="html-source" class="html-card"></article>
       </canvas>
       <article id="fallback-source" class="html-card fallback-html-card" hidden></article>
+      <section id="video-portal" class="video-portal" hidden aria-label="열린 영상 화면">
+        <div class="portal-frame">
+          <video autoplay playsinline></video>
+          <span class="portal-glass" aria-hidden="true"></span>
+          <span class="portal-signal" aria-hidden="true"></span>
+          <button class="portal-close" type="button" aria-label="영상 닫기">×</button>
+        </div>
+      </section>
       <button class="guide-trigger" type="button" aria-label="HTML-in-Canvas 설정 가이드 열기">?</button>
       <p id="runtime-status" class="runtime-status" hidden>API 확인 중</p>
     </section>
@@ -48,11 +57,15 @@ const htmlSource = document.querySelector<HTMLElement>("#html-source");
 const fallbackSource = document.querySelector<HTMLElement>("#fallback-source");
 const runtimeStatus = document.querySelector<HTMLElement>("#runtime-status");
 const guide = document.querySelector<HTMLDialogElement>("#setup-guide");
+const videoPortal = document.querySelector<HTMLElement>("#video-portal");
 if (!canvas) throw new Error("#stage Canvas를 찾지 못했습니다.");
 if (!htmlSource) throw new Error("#html-source 요소를 찾지 못했습니다.");
 if (!fallbackSource) throw new Error("#fallback-source 요소를 찾지 못했습니다.");
 if (!runtimeStatus) throw new Error("#runtime-status 요소를 찾지 못했습니다.");
 if (!guide) throw new Error("#setup-guide 요소를 찾지 못했습니다.");
+if (!videoPortal) throw new Error("#video-portal 요소를 찾지 못했습니다.");
+
+const destroyVideoPortal = mountVideoPortal(videoPortal);
 
 const nativeSupported = supportsNativeHtmlInCanvas(canvas);
 let renderer: NativeHtmlCanvas | CanvasStage;
@@ -104,4 +117,7 @@ guide.querySelector<HTMLButtonElement>(".copy-flag")?.addEventListener("click", 
 });
 guide.querySelector<HTMLButtonElement>(".reload-page")?.addEventListener("click", () => location.reload());
 
-if (import.meta.hot) import.meta.hot.dispose(() => renderer.destroy());
+if (import.meta.hot) import.meta.hot.dispose(() => {
+  renderer.destroy();
+  destroyVideoPortal();
+});
