@@ -21,7 +21,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
           <video autoplay playsinline></video>
           <span class="portal-glass" aria-hidden="true"></span>
           <span class="portal-signal" aria-hidden="true"></span>
-          <button class="portal-close" type="button" aria-label="영상 닫기">×</button>
+          <button class="portal-close" type="button" aria-label="영상 닫기"><span aria-hidden="true">×</span></button>
         </div>
       </section>
       <button class="guide-trigger" type="button" aria-label="HTML-in-Canvas 설정 가이드 열기">?</button>

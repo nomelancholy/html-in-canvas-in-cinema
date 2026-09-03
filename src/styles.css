@@ -113,11 +113,11 @@ a { color: inherit; text-decoration: none; }
 .curse-surface.is-struck .scan-tear { animation: paper-haunt .62s steps(3); }
 
 /* The texture now contains a separate paper and two sealed wooden boxes. */
-.html-card.curse-surface { width: 920px; height: 440px; overflow: visible; clip-path: none; background: transparent; box-shadow: none; }
+.html-card.curse-surface { width: 960px; height: 440px; overflow: visible; clip-path: none; background: transparent; box-shadow: none; }
 .html-card.curse-surface::before,
 .html-card.curse-surface::after,
 .curse-content::before { display: none; }
-.curse-content { display: grid; grid-template-columns: 700px 170px; gap: 30px; align-items: center; height: 440px; padding: 0; }
+.curse-content { display: grid; grid-template-columns: 700px 210px; gap: 36px; align-items: center; height: 440px; padding: 0; }
 .paper-sheet { position: relative; width: 700px; height: 420px; overflow: hidden;
   clip-path: polygon(1% 0, 13% .7%, 27% 0, 42% .5%, 60% 0, 79% .6%, 99% 0, 100% 17%, 99.4% 35%, 100% 54%, 99.2% 77%, 100% 99%, 82% 99.3%, 64% 100%, 44% 99.4%, 24% 100%, 0 99%, .6% 80%, 0 61%, .7% 43%, 0 21%);
   background:
@@ -137,15 +137,24 @@ a { color: inherit; text-decoration: none; }
   animation: omen-turn 42s linear infinite; mix-blend-mode: multiply; }
 .letter-field li { display: block; padding-left: 3px; }
 .letter-field li p { font-size: 10.5px; }
-.relic-boxes { display: grid; gap: 42px; place-items: center; }
+.relic-boxes { display: grid; gap: 34px; place-items: center; }
 .relic-box { --fly-1: 5px; --fly-2: 18px; --fly-3: 42px; --fly-4: 76px; --fly-5: 110px;
-  position: relative; width: 160px; height: 112px; padding: 0; border: 0; outline: 0; background: transparent;
+  position: relative; width: 210px; height: 140px; padding: 0; border: 0; outline: 0; background: transparent;
   cursor: not-allowed; filter: grayscale(.28) brightness(.68); transition: filter .35s ease, transform .35s ease; }
 .relic-box[data-box="0"] { --fly-1: -5px; --fly-2: -18px; --fly-3: -42px; --fly-4: -76px; --fly-5: -110px; }
-.screen-frame { position: absolute; inset: 0; overflow: hidden; border: 1px solid rgba(151,154,150,.76); border-radius: 2px;
-  background: #080a09; box-shadow: inset 0 0 0 2px rgba(28,30,29,.9), 0 9px 25px rgba(0,0,0,.46); }
-.screen-frame::before { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(91,95,91,.38); pointer-events: none; }
-.screen-static { position: absolute; inset: 5px; opacity: .46;
+.screen-frame { position: absolute; inset: 0; overflow: hidden; border: 1px solid rgba(128,119,101,.88);
+  clip-path: polygon(1px 0, calc(100% - 2px) 1px, 100% calc(100% - 2px), calc(100% - 1px) 100%, 2px calc(100% - 1px), 0 2px);
+  background: repeating-linear-gradient(101deg, #403d35 0 2px, #292923 3px 7px, #514b3f 8px 9px);
+  box-shadow: inset 0 0 0 2px #171714, inset 0 0 13px #030303, 0 10px 27px rgba(0,0,0,.58); }
+.screen-frame::before { content: ""; position: absolute; z-index: 2; inset: 5px; border: 1px solid rgba(121,112,94,.62);
+  box-shadow: inset 0 0 0 2px rgba(10,10,8,.95); pointer-events: none; }
+.screen-frame::after { content: ""; position: absolute; z-index: 3; inset: 1px; pointer-events: none;
+  background:
+    radial-gradient(circle at 5px 5px, #817762 0 1px, #191915 2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 5px) 5px, #817762 0 1px, #191915 2px, transparent 3px),
+    radial-gradient(circle at 5px calc(100% - 5px), #817762 0 1px, #191915 2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 5px) calc(100% - 5px), #817762 0 1px, #191915 2px, transparent 3px); opacity: .72; }
+.screen-static { position: absolute; inset: 7px; opacity: .46;
   background:
     radial-gradient(ellipse at 49% 53%, rgba(86,94,87,.32), transparent 52%),
     repeating-linear-gradient(0deg, transparent 0 2px, rgba(164,171,164,.08) 3px, transparent 4px),
@@ -153,13 +162,13 @@ a { color: inherit; text-decoration: none; }
 .screen-static::after { content: ""; position: absolute; inset: 0; opacity: .26;
   background: linear-gradient(90deg, transparent 14%, rgba(207,211,204,.24) 16%, transparent 18% 76%, rgba(189,197,190,.18) 78%, transparent 80%);
   animation: crt-roll 3.1s steps(7) infinite; }
-.box-seal { position: absolute; z-index: 5; top: -13px; left: 55px; width: 50px; height: 138px;
+.box-seal { position: absolute; z-index: 5; top: -11px; left: 76px; width: 58px; height: 162px;
   background: url("./assets/talisman-hanji.png") center / 100% 100% no-repeat;
   filter: saturate(1.08) brightness(1.18) contrast(1.05) drop-shadow(2px 4px 3px rgba(0,0,0,.7));
   transform: rotate(-2.2deg); transform-origin: 50% 14%; transition: none; }
 .box-seal::after { content: ""; position: absolute; top: 1px; left: 8px; width: 23px; height: 8px; opacity: .32;
   border-radius: 50%; background: #21140d; filter: blur(4px); mix-blend-mode: multiply; }
-.relic-box[data-box="1"] .box-seal { left: 54px; transform: rotate(2.7deg) scaleX(.96); }
+.relic-box[data-box="1"] .box-seal { left: 75px; transform: rotate(2.7deg) scaleX(.96); }
 .box-seal.seal-step-1 { transform: translate(var(--fly-1), -8px) rotate(7deg); }
 .box-seal.seal-step-2 { transform: translate(var(--fly-2), -23px) rotate(-16deg); opacity: .86; }
 .box-seal.seal-step-3 { transform: translate(var(--fly-3), -52px) rotate(28deg); opacity: .55; filter: blur(.4px); }
@@ -175,22 +184,36 @@ a { color: inherit; text-decoration: none; }
   background: rgba(0,0,0,.93); pointer-events: none; transition: opacity .42s ease; }
 .video-portal[hidden] { display: none; }
 .video-portal.is-open { opacity: 1; pointer-events: auto; }
-.portal-frame { position: relative; width: min(960px, 82vw); aspect-ratio: 16 / 9; padding: 5px; border: 1px solid rgba(151,154,150,.8); border-radius: 2px;
-  background: #30332f; box-shadow: 0 40px 110px #000;
+.portal-frame { position: relative; width: min(960px, 82vw); aspect-ratio: 16 / 9; padding: 8px; border: 1px solid rgba(127,118,99,.9);
+  background: repeating-linear-gradient(99deg, #4a463c 0 3px, #272722 4px 9px, #575043 10px 11px); box-shadow: 0 40px 110px #000;
   opacity: 0; transform: translate(var(--portal-from-x), var(--portal-from-y)) scale(var(--portal-from-scale)) rotateY(-12deg);
   transform-origin: center; transition: transform .78s cubic-bezier(.16,.84,.22,1), opacity .38s ease; }
 .video-portal.is-open .portal-frame { opacity: 1; transform: translate(0,0) scale(1) rotateY(0); }
+.portal-frame::before { content: ""; position: absolute; z-index: 3; inset: 4px; pointer-events: none; border: 1px solid rgba(136,125,103,.54);
+  box-shadow: inset 0 0 0 2px #11120f, inset 0 0 18px #000; }
+.portal-frame::after { content: ""; position: absolute; z-index: 4; inset: 2px; pointer-events: none;
+  background:
+    radial-gradient(circle at 6px 6px, #8d826a 0 1px, #151613 2px, transparent 4px),
+    radial-gradient(circle at calc(100% - 6px) 6px, #8d826a 0 1px, #151613 2px, transparent 4px),
+    radial-gradient(circle at 6px calc(100% - 6px), #8d826a 0 1px, #151613 2px, transparent 4px),
+    radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), #8d826a 0 1px, #151613 2px, transparent 4px); opacity: .76; }
 .portal-frame video { display: block; width: 100%; height: 100%; border: 1px solid #111311; border-radius: 0; background: #050606;
   object-fit: cover; filter: grayscale(.92) sepia(.18) contrast(1.25) brightness(.72); }
-.portal-glass { position: absolute; inset: 7px; overflow: hidden; pointer-events: none; border-radius: 0;
+.portal-glass { position: absolute; inset: 10px; overflow: hidden; pointer-events: none; border-radius: 0;
   background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(213,220,205,.08) 4px, transparent 5px),
     radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.72) 100%); mix-blend-mode: screen; }
 .portal-glass::after { content: ""; position: absolute; inset: -20% 0; opacity: .18;
   background: linear-gradient(transparent 42%, rgba(235,239,225,.32) 49%, transparent 56%); animation: portal-roll 4.2s linear infinite; }
 .portal-signal { position: absolute; right: 12px; bottom: 12px; width: 6px; height: 6px; border-radius: 50%; background: #8a1812;
   box-shadow: 0 0 9px #a51a12; animation: signal-breathe 1.8s ease-in-out infinite alternate; }
-.portal-close { position: absolute; top: -42px; right: 0; width: 31px; height: 31px; padding: 0; border: 1px solid #47433d;
-  border-radius: 50%; background: #0b0b0a; color: #a39c90; cursor: pointer; font: 19px serif; }
+.portal-close { position: absolute; z-index: 8; top: -49px; right: 2px; width: 38px; height: 38px; padding: 0; border: 1px solid #756b57;
+  border-radius: 1px 2px 1px 3px; background: repeating-linear-gradient(108deg, #3c3931 0 3px, #211f1b 4px 8px); color: #a99c80; cursor: pointer;
+  box-shadow: inset 0 0 0 2px #151511, 4px 7px 15px rgba(0,0,0,.72); transform: rotate(1.5deg); }
+.portal-close::before { content: ""; position: absolute; right: 7px; bottom: 35px; width: 1px; height: 17px; background: #625a49;
+  box-shadow: 2px 0 0 rgba(20,18,14,.8); transform: rotate(7deg); transform-origin: bottom; }
+.portal-close span { display: block; transform: translateY(-1px) rotate(-7deg); text-shadow: 1px 1px #15130f;
+  font: 24px "AppleMyungjo", "Batang", serif; }
+.portal-close:hover { color: #c2ae86; border-color: #9b896b; filter: brightness(1.12); }
 .scene-content { position: relative; z-index: 1; height: 100%; transition: opacity .28s ease, translate .28s ease, filter .28s ease; }
 .html-card.is-leaving .scene-content { opacity: 0; translate: 0 -12px; filter: blur(8px); }
 .html-card.is-entering .scene-content { opacity: 0; translate: 0 14px; }
