@@ -138,22 +138,22 @@ a { color: inherit; text-decoration: none; }
 .letter-field li { display: block; padding-left: 3px; }
 .letter-field li p { font-size: 10.5px; }
 .relic-boxes { display: grid; gap: 34px; place-items: center; }
-.relic-box { --fly-1: 5px; --fly-2: 18px; --fly-3: 42px; --fly-4: 76px; --fly-5: 110px;
-  position: relative; width: 210px; height: 140px; padding: 0; border: 0; outline: 0; background: transparent;
+.relic-box { position: relative; width: 210px; height: 140px; padding: 0; border: 0; outline: 0; background: transparent;
   cursor: not-allowed; filter: grayscale(.28) brightness(.68); transition: filter .35s ease, transform .35s ease; }
-.relic-box[data-box="0"] { --fly-1: -5px; --fly-2: -18px; --fly-3: -42px; --fly-4: -76px; --fly-5: -110px; }
 .screen-frame { position: absolute; inset: 0; overflow: hidden; border: 1px solid rgba(128,119,101,.88);
   clip-path: polygon(1px 0, calc(100% - 2px) 1px, 100% calc(100% - 2px), calc(100% - 1px) 100%, 2px calc(100% - 1px), 0 2px);
-  background: repeating-linear-gradient(101deg, #403d35 0 2px, #292923 3px 7px, #514b3f 8px 9px);
-  box-shadow: inset 0 0 0 2px #171714, inset 0 0 13px #030303, 0 10px 27px rgba(0,0,0,.58); }
-.screen-frame::before { content: ""; position: absolute; z-index: 2; inset: 5px; border: 1px solid rgba(121,112,94,.62);
-  box-shadow: inset 0 0 0 2px rgba(10,10,8,.95); pointer-events: none; }
+  background:
+    repeating-linear-gradient(7deg, rgba(54,34,20,.08) 0 1px, transparent 1px 6px),
+    linear-gradient(102deg, #867454, #baa47b 18%, #8f7b58 54%, #b19b72 82%, #746146);
+  box-shadow: inset 0 0 0 2px #4b3928, inset 0 0 15px rgba(34,18,9,.82), 0 10px 27px rgba(0,0,0,.58); }
+.screen-frame::before { content: ""; position: absolute; z-index: 2; inset: 5px; border: 1px solid rgba(75,49,29,.72);
+  box-shadow: inset 0 0 0 2px rgba(27,18,12,.92); pointer-events: none; }
 .screen-frame::after { content: ""; position: absolute; z-index: 3; inset: 1px; pointer-events: none;
   background:
-    radial-gradient(circle at 5px 5px, #817762 0 1px, #191915 2px, transparent 3px),
-    radial-gradient(circle at calc(100% - 5px) 5px, #817762 0 1px, #191915 2px, transparent 3px),
-    radial-gradient(circle at 5px calc(100% - 5px), #817762 0 1px, #191915 2px, transparent 3px),
-    radial-gradient(circle at calc(100% - 5px) calc(100% - 5px), #817762 0 1px, #191915 2px, transparent 3px); opacity: .72; }
+    radial-gradient(circle at 5px 5px, #3d2b1e 0 1px, #9c8763 2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 5px) 5px, #3d2b1e 0 1px, #9c8763 2px, transparent 3px),
+    radial-gradient(circle at 5px calc(100% - 5px), #3d2b1e 0 1px, #9c8763 2px, transparent 3px),
+    radial-gradient(circle at calc(100% - 5px) calc(100% - 5px), #3d2b1e 0 1px, #9c8763 2px, transparent 3px); opacity: .76; }
 .screen-static { position: absolute; inset: 7px; opacity: .46;
   background:
     radial-gradient(ellipse at 49% 53%, rgba(86,94,87,.32), transparent 52%),
@@ -165,15 +165,12 @@ a { color: inherit; text-decoration: none; }
 .box-seal { position: absolute; z-index: 5; top: -11px; left: 76px; width: 58px; height: 162px;
   background: url("./assets/talisman-hanji.png") center / 100% 100% no-repeat;
   filter: saturate(1.08) brightness(1.18) contrast(1.05) drop-shadow(2px 4px 3px rgba(0,0,0,.7));
-  transform: rotate(-2.2deg); transform-origin: 50% 14%; transition: none; }
+  transform: rotate(-2.2deg); transform-origin: 50% 14%; }
 .box-seal::after { content: ""; position: absolute; top: 1px; left: 8px; width: 23px; height: 8px; opacity: .32;
   border-radius: 50%; background: #21140d; filter: blur(4px); mix-blend-mode: multiply; }
 .relic-box[data-box="1"] .box-seal { left: 75px; transform: rotate(2.7deg) scaleX(.96); }
-.box-seal.seal-step-1 { transform: translate(var(--fly-1), -8px) rotate(7deg); }
-.box-seal.seal-step-2 { transform: translate(var(--fly-2), -23px) rotate(-16deg); opacity: .86; }
-.box-seal.seal-step-3 { transform: translate(var(--fly-3), -52px) rotate(28deg); opacity: .55; filter: blur(.4px); }
-.box-seal.seal-step-4 { transform: translate(var(--fly-4), -92px) rotate(-38deg) scale(.82); opacity: .22; filter: blur(1px); }
-.box-seal.is-gone { transform: translate(var(--fly-5), -126px) rotate(55deg) scale(.6); opacity: 0; }
+.box-seal.is-dissolving { animation: seal-dissolve 1.05s cubic-bezier(.45,0,.55,1) forwards; }
+.box-seal.is-gone { opacity: 0; visibility: hidden; }
 .curse-surface.boxes-unlocked .relic-box { cursor: pointer; filter: grayscale(.06) brightness(.94); }
 .curse-surface.boxes-unlocked .relic-box:not(.is-opening):hover { transform: translateY(-2px) scale(1.018); filter: brightness(1.08); }
 .relic-box.is-opening .screen-frame { border-color: rgba(210,213,207,.82); box-shadow: inset 0 0 0 2px rgba(28,30,29,.9), 0 0 22px rgba(190,199,191,.24); }
@@ -184,13 +181,16 @@ a { color: inherit; text-decoration: none; }
   background: rgba(0,0,0,.93); pointer-events: none; transition: opacity .42s ease; }
 .video-portal[hidden] { display: none; }
 .video-portal.is-open { opacity: 1; pointer-events: auto; }
-.portal-frame { position: relative; width: min(960px, 82vw); aspect-ratio: 16 / 9; padding: 8px; border: 1px solid rgba(127,118,99,.9);
-  background: repeating-linear-gradient(99deg, #4a463c 0 3px, #272722 4px 9px, #575043 10px 11px); box-shadow: 0 40px 110px #000;
+.portal-frame { position: relative; width: min(960px, 82vw); aspect-ratio: 16 / 9; padding: 8px; border: 1px solid rgba(93,68,45,.92);
+  background:
+    repeating-linear-gradient(7deg, rgba(54,34,20,.09) 0 1px, transparent 1px 7px),
+    linear-gradient(101deg, #796748, #b19b72 17%, #806d4e 57%, #ad966d 83%, #6d5a40);
+  box-shadow: inset 0 0 12px rgba(31,17,8,.72), 0 40px 110px #000;
   opacity: 0; transform: translate(var(--portal-from-x), var(--portal-from-y)) scale(var(--portal-from-scale)) rotateY(-12deg);
   transform-origin: center; transition: transform .78s cubic-bezier(.16,.84,.22,1), opacity .38s ease; }
 .video-portal.is-open .portal-frame { opacity: 1; transform: translate(0,0) scale(1) rotateY(0); }
-.portal-frame::before { content: ""; position: absolute; z-index: 3; inset: 4px; pointer-events: none; border: 1px solid rgba(136,125,103,.54);
-  box-shadow: inset 0 0 0 2px #11120f, inset 0 0 18px #000; }
+.portal-frame::before { content: ""; position: absolute; z-index: 3; inset: 4px; pointer-events: none; border: 1px solid rgba(75,49,29,.68);
+  box-shadow: inset 0 0 0 2px #241a11, inset 0 0 18px #000; }
 .portal-frame::after { content: ""; position: absolute; z-index: 4; inset: 2px; pointer-events: none;
   background:
     radial-gradient(circle at 6px 6px, #8d826a 0 1px, #151613 2px, transparent 4px),
@@ -290,6 +290,12 @@ footer code { color: #bcc1cc; font-family: inherit; }
 }
 @keyframes crt-roll { 0% { transform: translateX(-16px); } 50% { transform: translateX(18px); } 100% { transform: translateX(-8px); } }
 @keyframes crt-shadow { to { transform: translateX(8px) scaleX(.86); opacity: .1; } }
+@keyframes seal-dissolve {
+  0% { opacity: 1; filter: saturate(1.08) brightness(1.18) contrast(1.05) drop-shadow(2px 4px 3px rgba(0,0,0,.7)); }
+  34% { opacity: .76; filter: saturate(.82) brightness(1.24) contrast(.92) blur(.25px) drop-shadow(1px 3px 3px rgba(0,0,0,.42)); }
+  70% { opacity: .32; filter: saturate(.34) brightness(1.34) contrast(.72) blur(1.2px); }
+  100% { opacity: 0; filter: saturate(0) brightness(1.5) contrast(.55) blur(2.6px); }
+}
 @keyframes portal-roll { to { transform: translateY(70%); } }
 @keyframes signal-breathe { to { opacity: .3; } }
 @keyframes scan-tear {

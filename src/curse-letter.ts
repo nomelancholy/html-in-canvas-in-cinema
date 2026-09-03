@@ -84,24 +84,28 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     boxes.forEach((box, boxIndex) => {
       const seal = box.querySelector<HTMLElement>(".box-seal");
       if (!seal) return;
-      const start = 450 + boxIndex * 900;
-      for (let step = 1; step <= 4; step += 1) {
+      const start = 350 + boxIndex * 760;
+      releaseTimers.push(window.setTimeout(() => {
+        seal.classList.add("is-dissolving");
+        root.dispatchEvent(new CustomEvent("canvas:disturb"));
+        requestPaint();
+      }, start));
+      for (let step = 1; step <= 7; step += 1) {
         releaseTimers.push(window.setTimeout(() => {
-          seal.className = `box-seal seal-step-${step}`;
           root.dispatchEvent(new CustomEvent("canvas:disturb"));
           requestPaint();
-        }, start + step * 130));
+        }, start + step * 140));
       }
       releaseTimers.push(window.setTimeout(() => {
-        seal.className = "box-seal is-gone";
+        seal.classList.add("is-gone");
         requestPaint();
-      }, start + 650));
+      }, start + 1050));
     });
     releaseTimers.push(window.setTimeout(() => {
       root.classList.add("boxes-unlocked");
       boxes.forEach((box) => { box.disabled = false; });
       requestPaint();
-    }, 2150));
+    }, 2250));
   };
 
   const handleBoxClick = (event: MouseEvent): void => {
