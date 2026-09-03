@@ -128,6 +128,7 @@ export class NativeHtmlCanvas {
     this.#canvas.addEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.addEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.addEventListener("canvas:disturb", this.#handleTransition);
+    this.#element.addEventListener("canvas:paint-frame", this.#handlePaintFrame);
     this.#resize();
     if (mode === "native") {
       this.#canvas.requestPaint();
@@ -147,6 +148,7 @@ export class NativeHtmlCanvas {
     this.#canvas.removeEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.removeEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.removeEventListener("canvas:disturb", this.#handleTransition);
+    this.#element.removeEventListener("canvas:paint-frame", this.#handlePaintFrame);
     this.#mutationObserver?.disconnect();
     this.#snapshotHost?.remove();
     if (this.#mode === "snapshot") this.#element.style.opacity = "";
@@ -263,6 +265,11 @@ export class NativeHtmlCanvas {
     }
   };
   #handleTransition = (): void => { this.#transitionStartedAt = performance.now(); };
+
+  #handlePaintFrame = (): void => {
+    if (this.#mode === "native") this.#canvas.requestPaint();
+    else this.#queueSnapshot();
+  };
   #handlePointerMove = (event: PointerEvent): void => {
     const bounds = this.#canvas.getBoundingClientRect();
     this.#pointerTarget.x = (event.clientX - bounds.left) / bounds.width;

@@ -41,14 +41,28 @@ const surfaceMarkup = (): string => `
       <button class="relic-box" type="button" data-box="0" disabled aria-label="첫 번째 봉인된 화면">
         <span class="screen-frame" aria-hidden="true">
           <span class="screen-static"></span>
-          <span class="case-lid"></span>
+          <span class="case-hinges"><i></i><i></i></span>
+          <span class="case-lid">
+            <span class="case-lid-face"></span>
+            <span class="case-lid-back"></span>
+            <span class="case-lid-edge"></span>
+          </span>
+          <span class="case-latch"></span>
+          <span class="case-dust"><i></i><i></i><i></i><i></i><i></i><i></i></span>
         </span>
         <span class="box-seal" aria-hidden="true"></span>
       </button>
       <button class="relic-box" type="button" data-box="1" disabled aria-label="두 번째 봉인된 화면">
         <span class="screen-frame" aria-hidden="true">
           <span class="screen-static"></span>
-          <span class="case-lid"></span>
+          <span class="case-hinges"><i></i><i></i></span>
+          <span class="case-lid">
+            <span class="case-lid-face"></span>
+            <span class="case-lid-back"></span>
+            <span class="case-lid-edge"></span>
+          </span>
+          <span class="case-latch"></span>
+          <span class="case-dust"><i></i><i></i><i></i><i></i><i></i><i></i></span>
         </span>
         <span class="box-seal" aria-hidden="true"></span>
       </button>
@@ -60,6 +74,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   let chapter = 0;
   let revealed = 0;
   let strikeTimer = 0;
+  let paintFrame = 0;
   const releaseTimers: number[] = [];
   root.classList.add("curse-surface");
   root.dataset.chapter = "1";
@@ -72,7 +87,56 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
 
   const requestPaint = (): void => {
     const canvas = root.parentElement;
-    if (canvas instanceof HTMLCanvasElement && typeof canvas.requestPaint === "function") canvas.requestPaint();
+    if (canvas instanceof HTMLCanvasElement && typeof canvas.requestPaint === "function") {
+      canvas.requestPaint();
+      return;
+    }
+    root.dispatchEvent(new CustomEvent("canvas:paint-frame"));
+  };
+
+  const animateCase = (box: HTMLButtonElement, onComplete: () => void): void => {
+    window.cancelAnimationFrame(paintFrame);
+    const frame = box.querySelector<HTMLElement>(".screen-frame");
+    const screen = box.querySelector<HTMLElement>(".screen-static");
+    const lid = box.querySelector<HTMLElement>(".case-lid");
+    const latch = box.querySelector<HTMLElement>(".case-latch");
+    const dust = Array.from(box.querySelectorAll<HTMLElement>(".case-dust i"));
+    if (!frame || !screen || !lid || !latch) {
+      onComplete();
+      return;
+    }
+
+    const duration = 920;
+    const dustDrift = [-8, 7, -4, 8, -11, 5];
+    const startedAt = performance.now();
+    const paintFrameByFrame = (now: number): void => {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const settle = Math.sin(progress * Math.PI * 3) * (1 - progress) * 1.8;
+      const latchProgress = Math.min(1, Math.max(0, (progress - .08) / .42));
+
+      lid.style.transform = `translateY(${-11 * eased}px) translateZ(${8 * eased}px) rotateX(${108 * eased}deg)`;
+      lid.style.filter = `brightness(${1 - eased * .4})`;
+      screen.style.opacity = String(.25 + eased * .57);
+      screen.style.filter = `brightness(${.38 + eased * .62}) blur(${2.5 * (1 - eased)}px)`;
+      screen.style.transform = `scale(${.982 + eased * .018})`;
+      latch.style.opacity = String(1 - latchProgress);
+      latch.style.transform = `translateY(${17 * latchProgress}px) rotate(${13 * latchProgress}deg)`;
+      frame.style.transform = `translateY(${settle}px) scale(${1 + Math.sin(progress * Math.PI) * .003})`;
+      dust.forEach((particle, index) => {
+        const particleProgress = Math.min(1, Math.max(0, (progress - index * .055) / .62));
+        particle.style.opacity = String(Math.sin(particleProgress * Math.PI) * .42);
+        particle.style.transform = `translate(${dustDrift[index] * particleProgress}px, ${-42 * particleProgress}px) scale(${.5 + particleProgress * .75})`;
+      });
+      requestPaint();
+      if (progress < 1) {
+        paintFrame = window.requestAnimationFrame(paintFrameByFrame);
+        return;
+      }
+      box.dataset.opened = "true";
+      onComplete();
+    };
+    paintFrame = window.requestAnimationFrame(paintFrameByFrame);
   };
 
   const handleInput = (): void => {
@@ -161,20 +225,12 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     };
 
     if (box.classList.contains("is-opening")) {
-      openPortal();
+      if (box.dataset.opened === "true") openPortal();
       return;
     }
 
     box.classList.add("is-opening");
-    root.dispatchEvent(new CustomEvent("canvas:disturb"));
-    requestPaint();
-    [120, 260, 420, 560].forEach((delay) => {
-      releaseTimers.push(window.setTimeout(() => {
-        root.dispatchEvent(new CustomEvent("canvas:disturb"));
-        requestPaint();
-      }, delay));
-    });
-    releaseTimers.push(window.setTimeout(openPortal, 620));
+    animateCase(box, openPortal);
   };
 
   const handleSubmit = (event: SubmitEvent): void => {
@@ -220,6 +276,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
 
   return () => {
     clearTimeout(strikeTimer);
+    window.cancelAnimationFrame(paintFrame);
     releaseTimers.forEach(clearTimeout);
     input.removeEventListener("input", handleInput);
     input.removeEventListener("focus", handleFocus);

@@ -139,8 +139,10 @@ a { color: inherit; text-decoration: none; }
 .letter-field li p { font-size: 10.5px; }
 .relic-boxes { display: grid; grid-template-rows: repeat(2, 198px); gap: 24px; place-items: stretch; height: 420px; }
 .relic-box { position: relative; width: 300px; height: 198px; padding: 0; border: 0; outline: 0; background: transparent;
-  cursor: not-allowed; filter: grayscale(.28) brightness(.68); transition: filter .35s ease, transform .35s ease; }
+  cursor: not-allowed; perspective: 900px; transform-style: preserve-3d; filter: grayscale(.28) brightness(.68);
+  transition: filter .35s ease, transform .35s ease; }
 .screen-frame { position: absolute; inset: 0; overflow: visible; border: 1px solid rgba(128,119,101,.88); border-radius: 2px 1px 3px 1px;
+  transform-style: preserve-3d;
   background:
     repeating-linear-gradient(7deg, rgba(54,34,20,.08) 0 1px, transparent 1px 6px),
     linear-gradient(102deg, #867454, #baa47b 18%, #8f7b58 54%, #b19b72 82%, #746146);
@@ -161,18 +163,41 @@ a { color: inherit; text-decoration: none; }
 .screen-static::after { content: ""; position: absolute; inset: 0; opacity: .26;
   background: linear-gradient(90deg, transparent 14%, rgba(207,211,204,.24) 16%, transparent 18% 76%, rgba(189,197,190,.18) 78%, transparent 80%);
   animation: crt-roll 3.1s steps(7) infinite; }
-.case-lid { position: absolute; z-index: 4; inset: 6px; border: 1px solid rgba(71,43,25,.78); transform-origin: 50% 0;
+.case-lid { position: absolute; z-index: 5; inset: 6px; transform-origin: 50% 0; transform-style: preserve-3d;
+  will-change: transform; }
+.case-lid-face,
+.case-lid-back { position: absolute; inset: 0; display: block; border: 1px solid rgba(71,43,25,.78); backface-visibility: hidden; }
+.case-lid-face {
   background:
     radial-gradient(ellipse at 19% 26%, rgba(61,35,18,.18), transparent 22%),
     radial-gradient(ellipse at 76% 67%, rgba(69,38,19,.14), transparent 25%),
     repeating-linear-gradient(6deg, rgba(54,34,20,.06) 0 1px, transparent 1px 7px),
     linear-gradient(98deg, #887552, #b39d72 22%, #927b55 58%, #ab9368 82%, #786344);
-  box-shadow: inset 0 0 0 3px rgba(80,52,31,.38), inset 0 0 20px rgba(46,25,12,.62), 0 4px 9px rgba(0,0,0,.34);
-  transition: transform .62s cubic-bezier(.2,.72,.2,1), opacity .5s ease, filter .5s ease; }
-.case-lid::before { content: ""; position: absolute; inset: 13px 17px; border: 1px solid rgba(78,48,27,.36);
+  box-shadow: inset 0 0 0 3px rgba(80,52,31,.38), inset 0 0 20px rgba(46,25,12,.62), 0 4px 9px rgba(0,0,0,.34); }
+.case-lid-face::before { content: ""; position: absolute; inset: 13px 17px; border: 1px solid rgba(78,48,27,.36);
   background: linear-gradient(90deg, transparent 49.4%, rgba(69,40,23,.21) 50%, transparent 50.6%); box-shadow: inset 0 0 14px rgba(57,30,15,.16); }
-.case-lid::after { content: ""; position: absolute; bottom: -7px; left: calc(50% - 15px); width: 30px; height: 14px; border: 1px solid #49351f;
-  border-radius: 2px 2px 4px 4px; background: linear-gradient(90deg, #5e482b, #a1844b 48%, #574126); box-shadow: inset 0 0 4px #2e1c10, 0 2px 3px rgba(0,0,0,.45); }
+.case-lid-back { transform: rotateX(180deg) translateZ(1px);
+  background:
+    radial-gradient(circle at 50% 52%, transparent 0 24px, rgba(88,31,22,.22) 25px 26px, transparent 28px),
+    repeating-linear-gradient(7deg, rgba(57,35,19,.08) 0 1px, transparent 1px 6px),
+    linear-gradient(102deg, #6d5a3e, #927b56 48%, #675338);
+  box-shadow: inset 0 0 0 4px rgba(49,31,18,.48), inset 0 0 28px rgba(24,14,8,.78); }
+.case-lid-edge { position: absolute; right: 0; bottom: -10px; left: 0; height: 11px; display: block; border: 1px solid #432d1b;
+  background: linear-gradient(#8d744e, #49321f); transform: rotateX(-90deg); transform-origin: 50% 0; }
+.case-hinges { position: absolute; z-index: 7; top: 2px; right: 30px; left: 30px; display: flex; justify-content: space-between; pointer-events: none; }
+.case-hinges i { width: 35px; height: 7px; border: 1px solid #49371f; border-radius: 3px; background: linear-gradient(#9a814c, #4c391f);
+  box-shadow: inset 0 0 2px #26170e, 0 1px 2px rgba(0,0,0,.6); }
+.case-latch { position: absolute; z-index: 8; bottom: -7px; left: calc(50% - 16px); width: 32px; height: 15px; border: 1px solid #49351f;
+  border-radius: 2px 2px 4px 4px; background: linear-gradient(90deg, #5e482b, #a1844b 48%, #574126);
+  box-shadow: inset 0 0 4px #2e1c10, 0 2px 3px rgba(0,0,0,.45); transform-origin: 50% 0; }
+.case-dust { position: absolute; z-index: 8; inset: 12px; overflow: hidden; pointer-events: none; }
+.case-dust i { --dust-x: 50%; --dust-drift: -8px; position: absolute; left: var(--dust-x); bottom: 20%; width: 2px; height: 2px;
+  border-radius: 50%; background: #c5ae7f; box-shadow: 0 0 3px rgba(207,184,137,.7); opacity: 0; }
+.case-dust i:nth-child(2) { --dust-x: 27%; --dust-drift: 7px; bottom: 33%; animation-delay: .09s; }
+.case-dust i:nth-child(3) { --dust-x: 68%; --dust-drift: -4px; bottom: 38%; width: 1px; height: 1px; animation-delay: .17s; }
+.case-dust i:nth-child(4) { --dust-x: 80%; --dust-drift: 8px; bottom: 18%; animation-delay: .24s; }
+.case-dust i:nth-child(5) { --dust-x: 39%; --dust-drift: -11px; bottom: 27%; width: 1px; height: 1px; animation-delay: .31s; }
+.case-dust i:nth-child(6) { --dust-x: 58%; --dust-drift: 5px; bottom: 42%; animation-delay: .38s; }
 .box-seal { position: absolute; z-index: 5; top: -11px; left: 115px; width: 70px; height: 220px;
   background: url("./assets/talisman-hanji.png") center / 100% 100% no-repeat;
   filter: saturate(1.08) brightness(1.18) contrast(1.05) drop-shadow(2px 4px 3px rgba(0,0,0,.7));
@@ -185,9 +210,7 @@ a { color: inherit; text-decoration: none; }
 .relic-box:not(:disabled) { cursor: pointer; filter: grayscale(.06) brightness(.94); }
 .relic-box:not(:disabled):not(.is-opening):hover { transform: translateY(-2px) scale(1.018); filter: brightness(1.08); }
 .curse-surface.is-refilling .paper-sheet { animation: paper-refill .76s ease-in-out both; }
-.relic-box.is-opening .screen-frame { border-color: rgba(210,213,207,.82); box-shadow: inset 0 0 0 2px rgba(28,30,29,.9), 0 0 22px rgba(190,199,191,.24); }
-.relic-box.is-opening .screen-static { opacity: .78; }
-.relic-box.is-opening .case-lid { transform: perspective(440px) rotateX(82deg) translateY(-7px); opacity: .24; filter: brightness(.72); }
+.relic-box.is-opening .screen-frame { border-color: rgba(159,139,100,.86); }
 
 .video-portal { --portal-from-x: 34vw; --portal-from-y: 0px; --portal-from-scale: .18;
   position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 6vw; opacity: 0;
