@@ -39,11 +39,17 @@ const surfaceMarkup = (): string => `
     </section>
     <div class="relic-boxes" aria-label="부적으로 봉인된 화면 두 개">
       <button class="relic-box" type="button" data-box="0" disabled aria-label="첫 번째 봉인된 화면">
-        <span class="screen-frame" aria-hidden="true"><span class="screen-static"></span></span>
+        <span class="screen-frame" aria-hidden="true">
+          <span class="screen-static"></span>
+          <span class="case-lid"></span>
+        </span>
         <span class="box-seal" aria-hidden="true"></span>
       </button>
       <button class="relic-box" type="button" data-box="1" disabled aria-label="두 번째 봉인된 화면">
-        <span class="screen-frame" aria-hidden="true"><span class="screen-static"></span></span>
+        <span class="screen-frame" aria-hidden="true">
+          <span class="screen-static"></span>
+          <span class="case-lid"></span>
+        </span>
         <span class="box-seal" aria-hidden="true"></span>
       </button>
     </div>
@@ -144,16 +150,31 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   const handleBoxClick = (event: MouseEvent): void => {
     const box = (event.target as Element).closest<HTMLButtonElement>(".relic-box");
     if (!box || box.disabled) return;
-    box.classList.add("is-opening");
     const bounds = box.getBoundingClientRect();
-    window.dispatchEvent(new CustomEvent("portal:open", {
-      detail: {
-        channel: Number(box.dataset.box ?? 0),
-        rect: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
-      },
-    }));
+    const openPortal = (): void => {
+      window.dispatchEvent(new CustomEvent("portal:open", {
+        detail: {
+          channel: Number(box.dataset.box ?? 0),
+          rect: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
+        },
+      }));
+    };
+
+    if (box.classList.contains("is-opening")) {
+      openPortal();
+      return;
+    }
+
+    box.classList.add("is-opening");
     root.dispatchEvent(new CustomEvent("canvas:disturb"));
     requestPaint();
+    [120, 260, 420, 560].forEach((delay) => {
+      releaseTimers.push(window.setTimeout(() => {
+        root.dispatchEvent(new CustomEvent("canvas:disturb"));
+        requestPaint();
+      }, delay));
+    });
+    releaseTimers.push(window.setTimeout(openPortal, 620));
   };
 
   const handleSubmit = (event: SubmitEvent): void => {

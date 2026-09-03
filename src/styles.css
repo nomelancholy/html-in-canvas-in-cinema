@@ -140,8 +140,7 @@ a { color: inherit; text-decoration: none; }
 .relic-boxes { display: grid; grid-template-rows: repeat(2, 198px); gap: 24px; place-items: stretch; height: 420px; }
 .relic-box { position: relative; width: 300px; height: 198px; padding: 0; border: 0; outline: 0; background: transparent;
   cursor: not-allowed; filter: grayscale(.28) brightness(.68); transition: filter .35s ease, transform .35s ease; }
-.screen-frame { position: absolute; inset: 0; overflow: hidden; border: 1px solid rgba(128,119,101,.88);
-  clip-path: polygon(1px 0, calc(100% - 2px) 1px, 100% calc(100% - 2px), calc(100% - 1px) 100%, 2px calc(100% - 1px), 0 2px);
+.screen-frame { position: absolute; inset: 0; overflow: visible; border: 1px solid rgba(128,119,101,.88); border-radius: 2px 1px 3px 1px;
   background:
     repeating-linear-gradient(7deg, rgba(54,34,20,.08) 0 1px, transparent 1px 6px),
     linear-gradient(102deg, #867454, #baa47b 18%, #8f7b58 54%, #b19b72 82%, #746146);
@@ -162,6 +161,18 @@ a { color: inherit; text-decoration: none; }
 .screen-static::after { content: ""; position: absolute; inset: 0; opacity: .26;
   background: linear-gradient(90deg, transparent 14%, rgba(207,211,204,.24) 16%, transparent 18% 76%, rgba(189,197,190,.18) 78%, transparent 80%);
   animation: crt-roll 3.1s steps(7) infinite; }
+.case-lid { position: absolute; z-index: 4; inset: 6px; border: 1px solid rgba(71,43,25,.78); transform-origin: 50% 0;
+  background:
+    radial-gradient(ellipse at 19% 26%, rgba(61,35,18,.18), transparent 22%),
+    radial-gradient(ellipse at 76% 67%, rgba(69,38,19,.14), transparent 25%),
+    repeating-linear-gradient(6deg, rgba(54,34,20,.06) 0 1px, transparent 1px 7px),
+    linear-gradient(98deg, #887552, #b39d72 22%, #927b55 58%, #ab9368 82%, #786344);
+  box-shadow: inset 0 0 0 3px rgba(80,52,31,.38), inset 0 0 20px rgba(46,25,12,.62), 0 4px 9px rgba(0,0,0,.34);
+  transition: transform .62s cubic-bezier(.2,.72,.2,1), opacity .5s ease, filter .5s ease; }
+.case-lid::before { content: ""; position: absolute; inset: 13px 17px; border: 1px solid rgba(78,48,27,.36);
+  background: linear-gradient(90deg, transparent 49.4%, rgba(69,40,23,.21) 50%, transparent 50.6%); box-shadow: inset 0 0 14px rgba(57,30,15,.16); }
+.case-lid::after { content: ""; position: absolute; bottom: -7px; left: calc(50% - 15px); width: 30px; height: 14px; border: 1px solid #49351f;
+  border-radius: 2px 2px 4px 4px; background: linear-gradient(90deg, #5e482b, #a1844b 48%, #574126); box-shadow: inset 0 0 4px #2e1c10, 0 2px 3px rgba(0,0,0,.45); }
 .box-seal { position: absolute; z-index: 5; top: -11px; left: 115px; width: 70px; height: 220px;
   background: url("./assets/talisman-hanji.png") center / 100% 100% no-repeat;
   filter: saturate(1.08) brightness(1.18) contrast(1.05) drop-shadow(2px 4px 3px rgba(0,0,0,.7));
@@ -176,6 +187,7 @@ a { color: inherit; text-decoration: none; }
 .curse-surface.is-refilling .paper-sheet { animation: paper-refill .76s ease-in-out both; }
 .relic-box.is-opening .screen-frame { border-color: rgba(210,213,207,.82); box-shadow: inset 0 0 0 2px rgba(28,30,29,.9), 0 0 22px rgba(190,199,191,.24); }
 .relic-box.is-opening .screen-static { opacity: .78; }
+.relic-box.is-opening .case-lid { transform: perspective(440px) rotateX(82deg) translateY(-7px); opacity: .24; filter: brightness(.72); }
 
 .video-portal { --portal-from-x: 34vw; --portal-from-y: 0px; --portal-from-scale: .18;
   position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 6vw; opacity: 0;
