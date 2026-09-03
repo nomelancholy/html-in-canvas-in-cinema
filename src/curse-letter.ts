@@ -30,18 +30,12 @@ const surfaceMarkup = (): string => `
     </section>
     <div class="relic-boxes" aria-label="부적으로 봉인된 화면 두 개">
       <button class="relic-box" type="button" data-box="0" disabled aria-label="첫 번째 봉인된 화면">
-        <span class="crt-case" aria-hidden="true">
-          <span class="crt-glass"><i></i></span>
-          <span class="crt-controls"><i></i><i></i></span>
-        </span>
-        <span class="box-seal" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="screen-frame" aria-hidden="true"><span class="screen-static"></span></span>
+        <span class="box-seal" aria-hidden="true"></span>
       </button>
       <button class="relic-box" type="button" data-box="1" disabled aria-label="두 번째 봉인된 화면">
-        <span class="crt-case" aria-hidden="true">
-          <span class="crt-glass"><i></i></span>
-          <span class="crt-controls"><i></i><i></i></span>
-        </span>
-        <span class="box-seal" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="screen-frame" aria-hidden="true"><span class="screen-static"></span></span>
+        <span class="box-seal" aria-hidden="true"></span>
       </button>
     </div>
   </div>
