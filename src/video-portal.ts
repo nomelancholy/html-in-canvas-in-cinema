@@ -31,18 +31,45 @@ const createDemoStream = (channel: number): { stream: MediaStream; stop: () => v
     context.fillStyle = glow;
     context.fillRect(0, 0, canvas.width, canvas.height);
 
+    // A wide room establishes the full landscape frame; no portrait-shaped doorway.
+    const wall = context.createLinearGradient(0, 25, 0, 210);
+    wall.addColorStop(0, "#33372f"); wall.addColorStop(1, "#161a17");
+    context.fillStyle = wall;
+    context.fillRect(0, 28, 480, 160);
+    context.fillStyle = "#080b09";
+    context.fillRect(0, 188, 480, 82);
+    context.strokeStyle = "rgba(152,143,115,.32)";
+    context.lineWidth = 2;
+    for (let x = -160; x < 700; x += 80) {
+      context.beginPath(); context.moveTo(240 + (x - 240) * .38, 188);
+      context.lineTo(x, 270); context.stroke();
+    }
+    for (const y of [198, 217, 245]) {
+      context.beginPath(); context.moveTo(0, y); context.lineTo(480, y); context.stroke();
+    }
+    context.fillStyle = "#0a0e0c";
+    context.fillRect(0, 23, 480, 10);
+    context.fillRect(0, 182, 480, 7);
+    for (const x of [18, 152, 321, 456]) context.fillRect(x, 28, 7, 160);
     if (channel === 0) {
       context.fillStyle = "rgba(7,8,7,.9)";
-      context.fillRect(174, 28, 144, 242);
+      context.fillRect(42, 54, 392, 102);
       context.strokeStyle = "rgba(130,137,124,.18)";
       context.lineWidth = 5;
-      context.strokeRect(168, 22, 156, 248);
+      context.strokeRect(39, 51, 398, 108);
+      context.lineWidth = 1;
+      for (let x = 58; x < 433; x += 22) {
+        context.beginPath(); context.moveTo(x, 54); context.lineTo(x, 155); context.stroke();
+      }
+      for (let y = 72; y < 156; y += 21) {
+        context.beginPath(); context.moveTo(42, y); context.lineTo(434, y); context.stroke();
+      }
       const shadowX = 244 + Math.sin(tick * 0.018) * 7;
       context.fillStyle = "rgba(0,0,0,.7)";
       context.beginPath();
-      context.ellipse(shadowX, 112, 18, 31, 0, 0, Math.PI * 2);
+      context.ellipse(shadowX + 91, 125, 9, 13, 0, 0, Math.PI * 2);
       context.fill();
-      context.fillRect(shadowX - 14, 138, 28, 100);
+      context.fillRect(shadowX + 83, 136, 16, 52);
     } else {
       context.fillStyle = "rgba(4,5,5,.82)";
       context.fillRect(50, 42, 170, 143);
@@ -88,10 +115,12 @@ const createDemoStream = (channel: number): { stream: MediaStream; stop: () => v
 export const mountVideoPortal = (root: HTMLElement): (() => void) => {
   const video = root.querySelector<HTMLVideoElement>("video");
   const closeButton = root.querySelector<HTMLButtonElement>(".portal-close");
+  const fullscreenButton = root.querySelector<HTMLButtonElement>(".portal-fullscreen");
   if (!video || !closeButton) throw new Error("영상 화면을 만들지 못했습니다.");
   const remoteStreams = new Map<number, MediaStream>();
   let activeChannel = 0;
   let demo: ReturnType<typeof createDemoStream> | null = null;
+  let closeTimer = 0;
 
   const attach = (channel: number): void => {
     demo?.stop();
@@ -105,32 +134,41 @@ export const mountVideoPortal = (root: HTMLElement): (() => void) => {
       video.srcObject = demo.stream;
       video.muted = true;
     }
-    void video.play();
+    void video.play().catch(() => { video.muted = true; void video.play().catch(() => {}); });
   };
 
   const open = (channel = 0, origin?: PortalOrigin): void => {
     activeChannel = channel;
+    clearTimeout(closeTimer);
+    root.hidden = false;
     const viewport = root.getBoundingClientRect();
     if (origin) {
       root.style.setProperty("--portal-from-x", `${origin.x + origin.width / 2 - viewport.width / 2}px`);
       root.style.setProperty("--portal-from-y", `${origin.y + origin.height / 2 - viewport.height / 2}px`);
       root.style.setProperty("--portal-from-scale", String(Math.max(.12, Math.min(.32, origin.width / 760))));
     }
-    root.hidden = false;
     root.classList.remove("is-open");
     attach(channel);
     requestAnimationFrame(() => root.classList.add("is-open"));
   };
 
   const close = (): void => {
+    if (document.fullscreenElement === root) void document.exitFullscreen();
     root.classList.remove("is-open");
-    window.setTimeout(() => {
+    closeTimer = window.setTimeout(() => {
       root.hidden = true;
       demo?.stop();
       demo = null;
       video.pause();
       video.srcObject = null;
     }, 430);
+  };
+  const fullscreen = (): void => {
+    if (document.fullscreenElement === root) void document.exitFullscreen();
+    else void root.requestFullscreen?.().catch(() => {});
+  };
+  const handleKey = (event: KeyboardEvent): void => {
+    if (!root.hidden && event.key === "Escape" && !document.fullscreenElement) close();
   };
 
   const setRemoteStream = (channel: number, stream: MediaStream): void => {
@@ -146,12 +184,17 @@ export const mountVideoPortal = (root: HTMLElement): (() => void) => {
     if (event.target === root) close();
   };
   closeButton.addEventListener("click", close);
+  fullscreenButton?.addEventListener("click", fullscreen);
+  window.addEventListener("keydown", handleKey);
   root.addEventListener("click", handleBackdropClick);
   window.addEventListener("portal:open", handleOpen);
   window.hicVideoPortal = { open, close, setRemoteStream };
 
   return () => {
     demo?.stop();
+    clearTimeout(closeTimer);
+    fullscreenButton?.removeEventListener("click", fullscreen);
+    window.removeEventListener("keydown", handleKey);
     closeButton.removeEventListener("click", close);
     root.removeEventListener("click", handleBackdropClick);
     window.removeEventListener("portal:open", handleOpen);

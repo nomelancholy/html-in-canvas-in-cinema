@@ -14,6 +14,7 @@ type ProgramLocations = {
   correct: WebGLUniformLocation;
   burn: WebGLUniformLocation;
   burnCenterY: WebGLUniformLocation;
+  burnProgress: WebGLUniformLocation;
   opacity: WebGLUniformLocation;
   texture: WebGLUniformLocation;
 };
@@ -59,6 +60,7 @@ const fragmentSource = `#version 300 es
   uniform float uCorrect;
   uniform float uBurn;
   uniform float uBurnCenterY;
+  uniform float uBurnProgress;
   uniform float uOpacity;
   in vec2 vUv;
   in float vDepth;
@@ -66,6 +68,20 @@ const fragmentSource = `#version 300 es
 
   float hash(vec2 value) {
     return fract(sin(dot(value, vec2(127.1, 311.7))) * 43758.5453123);
+  }
+
+  float noise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1,0)), f.x),
+      mix(hash(i + vec2(0,1)), hash(i + vec2(1,1)), f.x), f.y);
+  }
+  float turbulence(vec2 p) {
+    float n = 0.0, amplitude = 0.5;
+    for (int i = 0; i < 4; i++) {
+      n += amplitude * noise(p); p = p * 2.03 + vec2(7.1, 3.7); amplitude *= 0.5;
+    }
+    return n;
   }
 
   void main() {
@@ -93,7 +109,40 @@ const fragmentSource = `#version 300 es
     vec3 cursed = base.rgb * moonTint * (flicker + (grain - 0.5) * 0.045) + vermilion;
     cursed *= 1.0 - uBurn * 0.22 * (1.0 - heatArea);
     cursed += vec3(0.24, 0.045, 0.006) * uBurn * heatArea * (0.24 + grain * 0.4);
-    outColor = vec4(cursed * edge, base.a * edge * uOpacity);
+    // Combustion is rendered at display frame rate, independently of DOM snapshots.
+    vec2 pixel = vUv * vec2(1050.0, 440.0);
+    float boxTop = uBurnCenterY < 0.5 ? 10.0 : 232.0;
+    float front = boxTop - 11.0 + max(0.0, 100.0 - uBurnProgress * 112.0) * 2.2;
+    float x = (pixel.x - 890.0) / 35.0;
+    float edgeNoise = (noise(vec2(pixel.x * 0.13, uTime * 1.6)) - 0.5) * 8.0;
+    float height = (front + edgeNoise - pixel.y) / 75.0;
+    float alive = step(0.0, uBurnProgress) * (1.0 - smoothstep(0.82, 1.0, uBurnProgress));
+    float flow = turbulence(vec2(x * 2.7, height * 3.4 + uTime * 5.0));
+    float curl = (turbulence(vec2(x * 1.5, height * 2.0 + uTime * 2.9)) - 0.5) * height;
+    float fuel = max(0.0, 1.0 - pow(abs(x + curl) * 0.85, 2.0));
+    float density = fuel - max(height, 0.0) * 0.94 - flow * 0.7;
+    float flame = smoothstep(0.02, 0.28, density) * smoothstep(-0.13, 0.02, height)
+      * (1.0 - smoothstep(0.85, 1.2, height)) * alive;
+    float hot = smoothstep(0.18, 0.72, density) * (1.0 - smoothstep(0.0, 0.5, height));
+    vec3 fireColor = mix(vec3(0.92, 0.12, 0.008), vec3(1.8, 0.67, 0.08), clamp(density * 2.0, 0.0, 1.0));
+    fireColor = mix(fireColor, vec3(2.2, 1.8, 0.88), hot);
+    float emberEdge = exp(-abs(height) * 42.0) * (1.0 - smoothstep(0.82, 1.05, abs(x))) * alive;
+    float glow = exp(-x*x * 0.8 - height*height * 3.0) * alive;
+    float smoke = smoothstep(0.42, 0.7, flow) * exp(-pow(x + curl, 2.0) * 0.8)
+      * smoothstep(0.4, 0.8, height) * (1.0 - smoothstep(1.0, 2.0, height)) * alive * 0.22;
+    cursed = mix(cursed, vec3(0.12, 0.105, 0.09), smoke);
+    cursed += vec3(0.28, 0.065, 0.007) * glow + fireColor * flame + vec3(1.2, 0.35, 0.025) * emberEdge;
+    float sparks = 0.0;
+    for (int i = 0; i < 18; i++) {
+      float seed = float(i);
+      float life = fract(uTime * (0.6 + hash(vec2(seed, 2)) * 0.5) + seed * 0.137);
+      vec2 spark = vec2(890.0 + (hash(vec2(seed, 8)) - 0.5) * 64.0 + sin(life * 7.0 + seed) * life * 24.0,
+        front - life * (65.0 + hash(vec2(seed, 4)) * 80.0));
+      vec2 delta = (pixel - spark) / vec2(0.75, 1.65);
+      sparks += exp(-dot(delta, delta)) * sin(life * 3.14159) * alive;
+    }
+    cursed += vec3(1.8, 0.65, 0.12) * sparks;
+    outColor = vec4(cursed * edge, max(base.a, max(flame, sparks)) * edge * uOpacity);
   }
 `;
 
@@ -208,6 +257,7 @@ export class NativeHtmlCanvas {
       correct: uniform("uCorrect"),
       burn: uniform("uBurn"),
       burnCenterY: uniform("uBurnCenterY"),
+      burnProgress: uniform("uBurnProgress"),
       opacity: uniform("uOpacity"),
       texture: uniform("uTexture"),
     };
@@ -443,6 +493,7 @@ export class NativeHtmlCanvas {
     gl.uniform1f(this.#locations.correct, this.#transitionCorrect);
     gl.uniform1f(this.#locations.burn, burn);
     gl.uniform1f(this.#locations.burnCenterY, this.#burnCenterY);
+    gl.uniform1f(this.#locations.burnProgress, burnAge >= 0 && burnAge < 1.85 ? burnAge / 1.85 : -1);
 
     const projection = mat4.create();
     const view = mat4.create();
