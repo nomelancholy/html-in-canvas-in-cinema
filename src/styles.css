@@ -147,13 +147,13 @@ a { color: inherit; text-decoration: none; }
 .curse-prologue { position: absolute; z-index: 6; top: 28px; right: 46px; left: 46px; margin: 0; color: #64130f;
   font: 600 19px/1.45 "AppleMyungjo", "Batang", serif; text-align: center; letter-spacing: -.035em;
   text-shadow: 0 1px rgba(245,225,177,.32), 0 0 11px rgba(115,10,5,.18); }
-.letter-field { inset: 84px 38px 76px; }
-.letter-field ol { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(10, 1fr); grid-auto-flow: column; gap: 0 13px; }
-.letter-field li { display: grid; place-items: center start; min-height: 26px; padding: 2px 5px; border-bottom: 1px solid rgba(74,30,17,.1);
-  transform: translateY(2px) rotate(calc((var(--line) - 15) * .006deg)); }
-.letter-field li.is-revealed { opacity: .68; }
-.letter-field li.is-current { opacity: 1; transform: translateY(0) scale(1.045); }
-.letter-field li p { overflow: visible; font-size: 12.2px; line-height: 1.2; white-space: nowrap; }
+.letter-field { inset: 87px 39px 76px; }
+.letter-field ol { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: baseline; gap: 8px 15px; }
+.letter-field li { display: none; flex: 0 0 auto; min-height: 22px; padding: 1px 2px; border: 0;
+  transform: translateY(3px) rotate(calc((var(--line) - 15) * .009deg)); }
+.letter-field li.is-revealed { display: inline-flex; align-items: baseline; opacity: .66; }
+.letter-field li.is-current { opacity: 1; transform: translateY(0) scale(1.035); }
+.letter-field li p { overflow: visible; font-size: 12.4px; line-height: 1.4; white-space: nowrap; }
 .relic-boxes { display: grid; grid-template-rows: repeat(2, 198px); gap: 24px; place-items: stretch; width: 300px; height: 420px; }
 .relic-box { position: relative; width: 300px; height: 198px; padding: 0; border: 0; outline: 0; background: transparent;
   perspective: 900px; transform-style: preserve-3d; filter: grayscale(.1) brightness(.88) contrast(1.08);
@@ -224,22 +224,32 @@ a { color: inherit; text-decoration: none; }
 .relic-box.is-unlocked { filter: grayscale(.02) brightness(1.03) contrast(1.1); }
 .relic-box.is-opening .screen-frame { border-color: rgba(159,139,100,.86); }
 
-.floating-field { position: absolute; z-index: 20; inset: -36px -52px; overflow: hidden; pointer-events: none;
-  mask-image: linear-gradient(90deg, black 0 24%, transparent 39% 66%, black 79%); }
-.floating-phrase { position: absolute; left: var(--float-x); top: var(--float-y); color: rgba(123,31,24,.27);
-  font: 600 var(--float-size)/1.3 "AppleMyungjo", "Batang", serif; letter-spacing: -.03em; white-space: nowrap;
-  text-shadow: 0 0 7px rgba(92,12,8,.32); mix-blend-mode: multiply; will-change: transform; }
-.floating-phrase:nth-last-child(-n+3) { color: rgba(151,39,28,.4); }
-.answer-apparition { --apparition-tilt: 0deg; position: absolute; z-index: 30; top: 38%; right: -40px; left: -40px; margin: 0;
-  color: #a51a12; opacity: 0; pointer-events: none; text-align: center; white-space: nowrap;
-  font: 700 50px/1.2 "AppleMyungjo", "Batang", serif; letter-spacing: -.055em;
-  text-shadow: 0 0 2px #d8774f, 0 0 15px rgba(117,12,7,.52), 2px 3px 1px rgba(25,2,1,.48); }
+.floating-field { position: absolute; z-index: 20; inset: -54px -72px; overflow: hidden; pointer-events: none;
+  mask-image: radial-gradient(ellipse 57% 46% at center, transparent 0 48%, rgba(0,0,0,.18) 61%, black 88%); }
+.floating-phrase { position: absolute; left: var(--float-x); top: var(--float-y); color: rgba(125,29,22,var(--float-depth));
+  font: 600 var(--float-size)/1.3 "AppleMyungjo", "Batang", serif; letter-spacing: -.025em; white-space: nowrap;
+  text-shadow: 0 0 5px rgba(92,12,8,.24); filter: blur(.18px); mix-blend-mode: multiply; will-change: transform; }
+.floating-phrase:nth-last-child(-n+3) { filter: blur(0); text-shadow: 0 0 8px rgba(130,18,11,.38); }
+.answer-apparition { --apparition-tilt: 0deg; position: absolute; z-index: 30; top: 38%; right: -68px; left: -68px; margin: 0;
+  color: #94140e; opacity: 0; pointer-events: none; text-align: center; white-space: nowrap;
+  font: 700 48px/1.2 "AppleMyungjo", "Batang", serif; letter-spacing: -.052em;
+  text-shadow: 0 1px 0 rgba(240,170,116,.35), 0 0 10px rgba(117,12,7,.48), 2px 3px 1px rgba(25,2,1,.42); }
 .answer-apparition::before,
 .answer-apparition::after { content: attr(data-text); position: absolute; inset: 0; opacity: .18; pointer-events: none; }
 .answer-apparition::before { color: #4e0805; transform: translate(-8px, 2px); clip-path: inset(18% 0 52%); filter: blur(1.2px); }
 .answer-apparition::after { color: #c44b29; transform: translate(7px, -2px); clip-path: inset(58% 0 12%); filter: blur(2px); }
+.answer-stroke { position: absolute; z-index: 29; top: 47%; left: 17%; width: 66%; height: 14px; opacity: 0; pointer-events: none;
+  transform-origin: 0 50%; background: linear-gradient(90deg, transparent, rgba(67,5,3,.7) 7%, rgba(149,29,17,.48) 54%, transparent 98%);
+  clip-path: polygon(0 42%, 9% 23%, 18% 34%, 28% 15%, 39% 32%, 51% 20%, 64% 39%, 76% 18%, 88% 36%, 100% 48%, 87% 63%, 72% 55%, 59% 74%, 43% 57%, 27% 78%, 12% 60%, 0 67%);
+  filter: blur(1.6px); mix-blend-mode: multiply; will-change: opacity, transform; }
+.answer-ash { position: absolute; z-index: 31; top: 47%; left: 50%; width: 1px; height: 1px; pointer-events: none; }
+.answer-ash i { position: absolute; width: 3px; height: 3px; border-radius: 50%; opacity: 0; background: #78150e;
+  box-shadow: 0 0 3px rgba(173,50,25,.66); will-change: opacity, transform; }
+.answer-ash i:nth-child(2n) { width: 2px; height: 2px; background: #32100c; }
+.answer-ash i:nth-child(3n) { margin-left: 36px; }
+.answer-ash i:nth-child(4n) { margin-left: -42px; }
 .curse-surface.is-answering .answer-apparition { animation: none; }
-.curse-surface.is-answering .paper-sheet { animation: answer-impact 1.05s steps(3) both; }
+.curse-surface.is-answering .paper-sheet { animation: answer-impact 1.05s cubic-bezier(.22,.68,.26,1) both; }
 .curse-surface.is-wrong .entry-shell { animation: entry-shiver .45s steps(2); border-bottom-color: #a70e08; }
 .curse-surface.is-wrong .scan-tear { animation: wrong-flare .48s steps(3); }
 

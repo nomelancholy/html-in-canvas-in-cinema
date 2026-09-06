@@ -11,6 +11,7 @@ type ProgramLocations = {
   time: WebGLUniformLocation;
   pointer: WebGLUniformLocation;
   transition: WebGLUniformLocation;
+  correct: WebGLUniformLocation;
   burn: WebGLUniformLocation;
   burnCenterY: WebGLUniformLocation;
   opacity: WebGLUniformLocation;
@@ -25,6 +26,7 @@ const vertexSource = `#version 300 es
   uniform float uTime;
   uniform vec2 uPointer;
   uniform float uTransition;
+  uniform float uCorrect;
   uniform float uBurn;
   uniform float uBurnCenterY;
   out vec2 vUv;
@@ -35,8 +37,10 @@ const vertexSource = `#version 300 es
     float pointerDistance = distance(aUv, uPointer);
     float pulse = sin(pointerDistance * 25.0 - uTime * 4.0) * exp(-pointerDistance * 5.2);
     float paperWave = sin(aUv.y * 8.0 + uTime * 0.72) * 0.009;
-    point.z += paperWave + pulse * (0.018 + uTransition * 0.18);
-    point.x += sin(aUv.y * 18.0 + uTime) * 0.018 * uTransition;
+    float answerBand = exp(-pow((aUv.y - 0.5) * 9.0, 2.0)) * uCorrect;
+    point.z += paperWave + pulse * (0.018 + uTransition * 0.11);
+    point.z += sin(aUv.x * 24.0 - uTime * 5.0) * 0.026 * uTransition * answerBand;
+    point.x += sin(aUv.y * 18.0 + uTime) * 0.018 * uTransition * (1.0 - uCorrect * 0.62);
     float burnFocus = exp(-pow((aUv.y - uBurnCenterY) * 5.2, 2.0));
     float burnArea = smoothstep(0.66, 0.82, aUv.x) * burnFocus;
     point.z += sin(aUv.y * 55.0 - uTime * 9.0) * 0.012 * uBurn * burnArea;
@@ -52,6 +56,7 @@ const fragmentSource = `#version 300 es
   uniform sampler2D uTexture;
   uniform float uTime;
   uniform float uTransition;
+  uniform float uCorrect;
   uniform float uBurn;
   uniform float uBurnCenterY;
   uniform float uOpacity;
@@ -74,7 +79,9 @@ const fragmentSource = `#version 300 es
     float heatArea = smoothstep(0.62, 0.76, vUv.x) * burnFocus;
     float heatRipple = sin(vUv.y * 96.0 + uTime * 14.0) + sin(vUv.y * 43.0 - uTime * 9.0) * 0.45;
     vec2 heatWarp = vec2(heatRipple * 0.0026, sin(vUv.x * 37.0 + uTime * 8.0) * 0.0014) * uBurn * heatArea;
-    vec2 warpedUv = clamp(vUv + direction * shockwave + vec2(filmJitter, 0.0) + heatWarp, 0.002, 0.998);
+    float answerBand = exp(-pow((vUv.y - 0.5) * 9.0, 2.0)) * uTransition * uCorrect;
+    vec2 answerWarp = vec2(sin(vUv.y * 51.0 + uTime * 5.0), sin(vUv.x * 31.0 - uTime * 4.0)) * 0.0022 * answerBand;
+    vec2 warpedUv = clamp(vUv + direction * shockwave + vec2(filmJitter, 0.0) + heatWarp + answerWarp, 0.002, 0.998);
     vec4 base = texture(uTexture, warpedUv);
     float grain = hash(floor(vUv * vec2(360.0, 240.0)) + timeSlice);
     float flicker = 0.955 + hash(vec2(timeSlice, 9.0)) * 0.045;
@@ -82,7 +89,7 @@ const fragmentSource = `#version 300 es
     float edge = smoothstep(0.0, 0.035, vUv.x) * smoothstep(0.0, 0.035, vUv.y)
       * smoothstep(0.0, 0.035, 1.0 - vUv.x) * smoothstep(0.0, 0.035, 1.0 - vUv.y);
     vec3 moonTint = vec3(0.93, 0.95, 0.9);
-    vec3 vermilion = vec3(0.24, 0.008, 0.004) * (inkBloom * 0.7 + max(vDepth, 0.0) * 0.25);
+    vec3 vermilion = vec3(0.24, 0.008, 0.004) * (inkBloom * 0.7 + max(vDepth, 0.0) * 0.25 + answerBand * (0.28 + grain * 0.2));
     vec3 cursed = base.rgb * moonTint * (flicker + (grain - 0.5) * 0.045) + vermilion;
     cursed *= 1.0 - uBurn * 0.22 * (1.0 - heatArea);
     cursed += vec3(0.24, 0.045, 0.006) * uBurn * heatArea * (0.24 + grain * 0.4);
@@ -110,6 +117,7 @@ export class NativeHtmlCanvas {
   #frameId = 0;
   #startedAt = performance.now();
   #transitionStartedAt = -Infinity;
+  #transitionCorrect = 0;
   #burnStartedAt = -Infinity;
   #burnCenterY = 0.25;
   #pointer = { x: 0.5, y: 0.5 };
@@ -197,6 +205,7 @@ export class NativeHtmlCanvas {
       time: uniform("uTime"),
       pointer: uniform("uPointer"),
       transition: uniform("uTransition"),
+      correct: uniform("uCorrect"),
       burn: uniform("uBurn"),
       burnCenterY: uniform("uBurnCenterY"),
       opacity: uniform("uOpacity"),
@@ -286,7 +295,10 @@ export class NativeHtmlCanvas {
       this.#canvas.dataset.webglError = error instanceof Error ? error.message : String(error);
     }
   };
-  #handleTransition = (): void => { this.#transitionStartedAt = performance.now(); };
+  #handleTransition = (event: Event): void => {
+    this.#transitionCorrect = (event as CustomEvent<{ kind?: string }>).detail?.kind === "correct" ? 1 : 0;
+    this.#transitionStartedAt = performance.now();
+  };
   #handleBurn = (event: Event): void => {
     const boxIndex = Number((event as CustomEvent<{ boxIndex?: number }>).detail?.boxIndex ?? 0);
     this.#burnCenterY = boxIndex === 0 ? .25 : .75;
@@ -428,6 +440,7 @@ export class NativeHtmlCanvas {
     gl.uniform1f(this.#locations.time, elapsed);
     gl.uniform2f(this.#locations.pointer, this.#pointer.x, this.#pointer.y);
     gl.uniform1f(this.#locations.transition, transition);
+    gl.uniform1f(this.#locations.correct, this.#transitionCorrect);
     gl.uniform1f(this.#locations.burn, burn);
     gl.uniform1f(this.#locations.burnCenterY, this.#burnCenterY);
 

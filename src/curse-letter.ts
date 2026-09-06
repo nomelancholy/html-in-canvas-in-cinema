@@ -51,6 +51,8 @@ const surfaceMarkup = (): string => `
     </div>
     <div class="floating-field" aria-hidden="true"></div>
     <p class="answer-apparition" aria-hidden="true"></p>
+    <span class="answer-stroke" aria-hidden="true"></span>
+    <span class="answer-ash" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
     <span class="burn-cinema" aria-hidden="true"></span>
   </div>
 `;
@@ -58,6 +60,7 @@ const surfaceMarkup = (): string => `
 export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   let phase: "pin" | "phrases" | "complete" = "pin";
   let revealed = 0;
+  const solvedPhraseIndexes = new Set<number>();
   let strikeTimer = 0;
   let wrongTimer = 0;
   let paintFrame = 0;
@@ -74,9 +77,11 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   const input = root.querySelector<HTMLInputElement>("#sentence-input");
   const boxes = Array.from(root.querySelectorAll<HTMLElement>(".relic-box"));
   const apparition = root.querySelector<HTMLElement>(".answer-apparition");
+  const answerStroke = root.querySelector<HTMLElement>(".answer-stroke");
+  const answerAsh = Array.from(root.querySelectorAll<HTMLElement>(".answer-ash i"));
   const floatingField = root.querySelector<HTMLElement>(".floating-field");
   const burnCinema = root.querySelector<HTMLElement>(".burn-cinema");
-  if (!form || !input || boxes.length !== 2 || !apparition || !floatingField || !burnCinema) {
+  if (!form || !input || boxes.length !== 2 || !apparition || !answerStroke || answerAsh.length !== 8 || !floatingField || !burnCinema) {
     throw new Error("저주의 편지 입력 UI를 만들지 못했습니다.");
   }
   input.inputMode = "numeric";
@@ -143,9 +148,9 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
         Array.from(floatingField.querySelectorAll<HTMLElement>(".floating-phrase")).forEach((word, index) => {
           const seed = Number(word.dataset.seed ?? index);
           const t = now / 1000;
-          const x = Math.sin(t * .18 + seed * 1.7) * 3.5;
-          const y = Math.cos(t * .12 + seed * .83) * 7;
-          const rotation = Math.sin(t * .1 + seed) * .45;
+          const x = Math.sin(t * (.11 + seed % 3 * .012) + seed * 1.7) * (9 + seed % 4 * 2);
+          const y = Math.cos(t * .09 + seed * .83) * (2.5 + seed % 3);
+          const rotation = Math.sin(t * .08 + seed) * .28;
           word.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
         });
         requestPaint();
@@ -163,12 +168,13 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     floating.className = "floating-phrase";
     floating.textContent = phrase;
     floating.dataset.seed = String(index + 1);
-    const slot = index % 10;
-    floating.style.setProperty("--float-x", `${slot % 2 === 0 ? 3 : 76}%`);
-    floating.style.setProperty("--float-y", `${9 + Math.floor(slot / 2) * 18}%`);
-    floating.style.setProperty("--float-size", `${11 + (index % 3)}px`);
+    const slot = Math.max(0, solvedPhraseIndexes.size - 1) % 12;
+    floating.style.setProperty("--float-x", `${6 + (slot % 6) * 16}%`);
+    floating.style.setProperty("--float-y", `${slot < 6 ? 8 + (slot % 2) * 6 : 79 + (slot % 2) * 7}%`);
+    floating.style.setProperty("--float-size", `${10.5 + (index % 3)}px`);
+    floating.style.setProperty("--float-depth", `${.18 + (index % 4) * .07}`);
     floatingField.append(floating);
-    while (floatingField.children.length > 10) floatingField.firstElementChild?.remove();
+    while (floatingField.children.length > 12) floatingField.firstElementChild?.remove();
     startDrifting();
     apparition.textContent = phrase;
     apparition.dataset.text = phrase;
@@ -180,10 +186,20 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
       const entrance = Math.min(1, progress / .3);
       const eased = 1 - (1 - entrance) ** 3;
       const fade = progress < .64 ? Math.min(1, progress / .12) : Math.max(0, (1 - progress) / .36);
-      const scale = .58 + eased * .47 + Math.max(0, progress - .64) * .36;
+      const scale = .9 + eased * .11 + Math.max(0, progress - .68) * .16;
+      const written = Math.min(1, progress / .24);
       apparition.style.opacity = String(fade);
-      apparition.style.transform = `translateY(${34 - eased * 43 - Math.max(0, progress - .64) * 56}px) scale(${scale}) rotate(var(--apparition-tilt))`;
-      apparition.style.filter = `blur(${(1 - eased) * 8 + Math.max(0, progress - .72) * 8}px)`;
+      apparition.style.clipPath = `inset(0 ${(1 - written) * 100}% 0 0)`;
+      apparition.style.transform = `translateY(${12 - eased * 18 - Math.max(0, progress - .68) * 28}px) scale(${scale}) rotate(var(--apparition-tilt))`;
+      apparition.style.filter = `blur(${(1 - eased) * 3.5 + Math.max(0, progress - .76) * 6}px) contrast(${1.05 + Math.sin(progress * Math.PI) * .25})`;
+      answerStroke.style.opacity = String(Math.sin(progress * Math.PI) * .68);
+      answerStroke.style.transform = `translateX(${(written - 1) * 62}px) scaleX(${.18 + written * .9}) rotate(${Number((index % 5) - 2) * .35}deg)`;
+      answerAsh.forEach((particle, particleIndex) => {
+        const life = Math.min(1, Math.max(0, (progress - particleIndex * .035) / .72));
+        const drift = Math.sin(particleIndex * 2.4 + now * .008) * (8 + particleIndex * 1.7);
+        particle.style.opacity = String(Math.sin(life * Math.PI) * .48);
+        particle.style.transform = `translate(${drift}px, ${-life * (25 + particleIndex * 4)}px) scale(${.5 + life * .7})`;
+      });
       requestPaint();
       if (progress < 1) answerFrame = window.requestAnimationFrame(paintAnswer);
     };
@@ -191,7 +207,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     root.classList.remove("is-answering");
     void root.offsetWidth;
     root.classList.add("is-answering", "is-struck");
-    root.dispatchEvent(new CustomEvent("canvas:disturb"));
+    root.dispatchEvent(new CustomEvent("canvas:disturb", { detail: { kind: "correct" } }));
     clearTimeout(strikeTimer);
     strikeTimer = window.setTimeout(() => { root.classList.remove("is-answering", "is-struck"); requestPaint(); }, 1280);
   };
@@ -273,7 +289,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
       if (normalizeAnswer(written) !== "1208") {
         input.setAttribute("aria-invalid", "true");
         root.classList.remove("is-wrong"); void root.offsetWidth; root.classList.add("is-wrong");
-        root.dispatchEvent(new CustomEvent("canvas:disturb"));
+        root.dispatchEvent(new CustomEvent("canvas:disturb", { detail: { kind: "wrong" } }));
         clearTimeout(wrongTimer);
         wrongTimer = window.setTimeout(() => { root.classList.remove("is-wrong"); requestPaint(); }, 520);
         input.select(); requestPaint(); return;
@@ -292,17 +308,20 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
       return;
     }
     if (phase !== "phrases") return;
-    const expected = PASS_PHRASES[revealed];
-    if (!written || !expected || normalizeAnswer(written) !== normalizeAnswer(expected)) {
+    const matchedIndex = PASS_PHRASES.findIndex((phrase, index) =>
+      !solvedPhraseIndexes.has(index) && normalizeAnswer(written) === normalizeAnswer(phrase));
+    if (!written || matchedIndex < 0) {
       input.setAttribute("aria-invalid", "true");
       root.classList.remove("is-wrong"); void root.offsetWidth; root.classList.add("is-wrong");
-      root.dispatchEvent(new CustomEvent("canvas:disturb"));
+      root.dispatchEvent(new CustomEvent("canvas:disturb", { detail: { kind: "wrong" } }));
       clearTimeout(wrongTimer);
       wrongTimer = window.setTimeout(() => { root.classList.remove("is-wrong"); requestPaint(); }, 520);
       input.select(); requestPaint(); return;
     }
-    showCorrectEffect(expected, revealed);
-    revealed += 1;
+    const matchedPhrase = PASS_PHRASES[matchedIndex];
+    solvedPhraseIndexes.add(matchedIndex);
+    showCorrectEffect(matchedPhrase, matchedIndex);
+    revealed = solvedPhraseIndexes.size;
     root.dataset.revealed = String(revealed);
     root.classList.add("has-revealed");
     input.value = ""; input.setAttribute("value", ""); input.removeAttribute("aria-invalid"); root.classList.remove("has-writing");
