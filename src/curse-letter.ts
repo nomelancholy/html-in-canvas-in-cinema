@@ -9,6 +9,10 @@ const PASS_PHRASES = [
   "내 이야기를", "완성할 것이다",
 ] as const;
 
+const PASS_PHRASE_ALIASES: Partial<Record<number, readonly string[]>> = {
+  5: ["나도 멈췄다"],
+};
+
 const normalizeAnswer = (value: string): string =>
   value.normalize("NFC").replace(/[\s.,!?…·。]/g, "").toLocaleLowerCase("ko-KR");
 
@@ -315,8 +319,10 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
       return;
     }
     if (phase !== "phrases") return;
+    const normalizedWritten = normalizeAnswer(written);
     const matchedIndex = PASS_PHRASES.findIndex((phrase, index) =>
-      !solvedPhraseIndexes.has(index) && normalizeAnswer(written) === normalizeAnswer(phrase));
+      !solvedPhraseIndexes.has(index) && [phrase, ...(PASS_PHRASE_ALIASES[index] ?? [])]
+        .some((answer) => normalizedWritten === normalizeAnswer(answer)));
     if (!written || matchedIndex < 0) {
       input.setAttribute("aria-invalid", "true");
       root.classList.remove("is-wrong"); void root.offsetWidth; root.classList.add("is-wrong");
