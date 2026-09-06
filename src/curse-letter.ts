@@ -70,6 +70,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   let paintFrame = 0;
   let burnFrame = 0;
   let answerFrame = 0;
+  let debugRevealing = false;
   root.classList.add("curse-surface");
   root.dataset.phase = phase;
   root.dataset.revealed = "0";
@@ -258,6 +259,65 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     burnFrame = window.requestAnimationFrame(burn);
   };
 
+  const openCaseImmediately = (box: HTMLElement): void => {
+    const frame = box.querySelector<HTMLElement>(".screen-frame");
+    const screen = box.querySelector<HTMLElement>(".screen-static");
+    const lid = box.querySelector<HTMLElement>(".case-lid");
+    const lidBack = box.querySelector<HTMLElement>(".case-lid-back");
+    const latch = box.querySelector<HTMLElement>(".case-latch");
+    box.classList.add("is-unlocked", "is-opening");
+    box.dataset.opened = "true";
+    box.querySelector<HTMLElement>(".box-seal")?.classList.add("is-gone");
+    if (frame) frame.style.transform = "translateY(0) scale(1)";
+    if (screen) {
+      screen.style.opacity = ".82";
+      screen.style.filter = "brightness(1) blur(0)";
+      screen.style.transform = "scale(1)";
+    }
+    if (lid) {
+      lid.style.transform = "translateY(-8px) translateZ(0) rotateX(104deg)";
+      lid.style.filter = "brightness(.66)";
+    }
+    if (lidBack) lidBack.style.opacity = "1";
+    if (latch) {
+      latch.style.opacity = "0";
+      latch.style.transform = "translateY(17px) rotate(13deg)";
+    }
+  };
+
+  const revealAllForTesting = (): void => {
+    if (phase === "complete") {
+      if (boxes[1]?.dataset.opened === "true") openPortal(boxes[1], 1);
+      return;
+    }
+    if (debugRevealing) return;
+    debugRevealing = true;
+    window.cancelAnimationFrame(answerFrame);
+    window.cancelAnimationFrame(paintFrame);
+    window.cancelAnimationFrame(burnFrame);
+    if (phase === "pin") {
+      openCaseImmediately(boxes[0]);
+      enterPhrasePhase();
+    }
+    PASS_PHRASES.forEach((_, index) => {
+      solvedPhraseIndexes.add(index);
+      root.querySelector<HTMLElement>(`[data-letter-line="${index}"]`)?.classList.add("is-revealed");
+    });
+    revealed = PASS_PHRASES.length;
+    phase = "complete";
+    root.dataset.phase = phase;
+    root.dataset.revealed = String(revealed);
+    root.classList.add("has-revealed");
+    input.value = "";
+    input.setAttribute("value", "");
+    input.disabled = true;
+    requestPaint();
+    burnSealAndOpen(1, () => {
+      debugRevealing = false;
+      openPortal(boxes[1], 1);
+    });
+  };
+
   const handleInput = (): void => {
     input.setAttribute("value", input.value);
     input.removeAttribute("aria-invalid");
@@ -329,6 +389,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   input.addEventListener("blur", handleBlur);
   input.addEventListener("keydown", handleKeyDown);
   form.addEventListener("submit", handleSubmit);
+  window.addEventListener("curse:reveal-all", revealAllForTesting);
   return () => {
     clearTimeout(strikeTimer); clearTimeout(wrongTimer);
     window.cancelAnimationFrame(paintFrame); window.cancelAnimationFrame(burnFrame);
@@ -336,5 +397,6 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     input.removeEventListener("input", handleInput); input.removeEventListener("focus", handleFocus);
     input.removeEventListener("blur", handleBlur); input.removeEventListener("keydown", handleKeyDown);
     form.removeEventListener("submit", handleSubmit);
+    window.removeEventListener("curse:reveal-all", revealAllForTesting);
   };
 };

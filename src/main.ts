@@ -25,6 +25,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
           <button class="portal-fullscreen" type="button" aria-label="전체화면 전환" title="전체화면"><span aria-hidden="true">⛶</span></button>
         </div>
       </section>
+      <button class="debug-reveal" type="button" aria-label="두 번째 문장 암호 정답 전체 공개">정답 전체 공개</button>
       <button class="guide-trigger" type="button" aria-label="HTML-in-Canvas 설정 가이드 열기">?</button>
       <p id="runtime-status" class="runtime-status" hidden>API 확인 중</p>
     </section>
@@ -106,6 +107,9 @@ if (supportCheck) {
 }
 
 document.querySelector<HTMLButtonElement>(".guide-trigger")?.addEventListener("click", () => guide.showModal());
+document.querySelector<HTMLButtonElement>(".debug-reveal")?.addEventListener("click", () => {
+  window.dispatchEvent(new CustomEvent("curse:reveal-all"));
+});
 guide.querySelector<HTMLButtonElement>(".guide-close")?.addEventListener("click", () => guide.close());
 guide.addEventListener("click", (event) => {
   if (event.target === guide) guide.close();
