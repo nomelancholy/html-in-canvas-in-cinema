@@ -235,7 +235,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     burnCinema.style.setProperty("--burn-focus-y", boxIndex === 0 ? "25%" : "75%");
     root.dispatchEvent(new CustomEvent("canvas:burn", { detail: { boxIndex } }));
     let caseStarted = false;
-    const duration = 2800;
+    const duration = 1850;
     const startedAt = performance.now();
     const burn = (now: number): void => {
       const progress = Math.min(1, (now - startedAt) / duration);
@@ -243,17 +243,24 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
       const edgeAt = (offset: number): number => Math.max(0, Math.min(100, charEdge + Math.sin(now * .011 + offset) * (2.8 - progress * 1.7)));
       seal.style.clipPath = `polygon(0 0,100% 0,100% ${edgeAt(1)}%,88% ${edgeAt(2.4)}%,73% ${edgeAt(4.1)}%,57% ${edgeAt(5.8)}%,41% ${edgeAt(7.2)}%,25% ${edgeAt(8.9)}%,11% ${edgeAt(10.5)}%,0 ${edgeAt(12)}%)`;
       const flare = Math.sin(progress * Math.PI);
-      seal.style.filter = `sepia(${.12 + progress * .68}) saturate(${1.04 - progress * .5}) brightness(${1.02 + flare * .34 - progress * .18}) contrast(${1.02 + progress * .72}) drop-shadow(0 0 ${3 + flare * 8}px rgba(150,34,8,.72))`;
+      seal.style.filter = `sepia(${.12 + progress * .78}) saturate(${1.12 - progress * .58}) brightness(${1.02 + flare * .48 - progress * .22}) contrast(${1.04 + progress * .88}) drop-shadow(0 0 ${4 + flare * 11}px rgba(174,40,7,.82))`;
       fire.style.top = `${-11 + charEdge * 2.2}px`;
-      fire.style.opacity = String(progress < .9 ? Math.min(.92, progress * 4.5) : (1 - progress) * 9.2);
-      burnCinema.style.opacity = String(Math.sin(progress * Math.PI) * .78);
+      fire.style.opacity = String(progress < .88 ? Math.min(1, progress * 7) : (1 - progress) * 8.4);
+      fire.style.transform = `translate(-50%, -3px) scaleX(${.94 + Math.sin(now * .023) * .08}) skewX(${Math.sin(now * .017) * 3}deg)`;
+      fire.style.filter = `blur(.2px) brightness(${1.05 + flare * .42}) saturate(${1.05 + flare * .55})`;
+      fire.style.setProperty("--flame-scale", String(.88 + Math.sin(now * .027) * .13));
+      fire.style.setProperty("--flame-skew", `${Math.sin(now * .019) * 6}deg`);
+      fire.style.setProperty("--smoke-x", `${Math.sin(now * .008) * 9}px`);
+      fire.style.setProperty("--smoke-lift", `${-27 - flare * 13}px`);
+      fire.style.setProperty("--smoke-opacity", String(.34 + flare * .32));
+      burnCinema.style.opacity = String(Math.min(.92, Math.sin(progress * Math.PI) * 1.05));
       fire.querySelectorAll<HTMLElement>("i").forEach((ember, index) => {
-        const life = (progress * 3.1 + index * .137) % 1;
-        const drift = Math.sin(now * .009 + index * 2.1) * (5 + index % 4);
-        ember.style.opacity = String(Math.sin(life * Math.PI) * (1 - progress * .45));
-        ember.style.transform = `translate(${drift}px, ${-8 - life * (24 + index % 5 * 5)}px) scale(${.45 + (1 - life) * .85})`;
+        const life = (progress * 4.8 + index * .137) % 1;
+        const drift = Math.sin(now * .012 + index * 2.1) * (7 + index % 4 * 2);
+        ember.style.opacity = String(Math.sin(life * Math.PI) * (1 - progress * .28));
+        ember.style.transform = `translate(${drift}px, ${-10 - life * (33 + index % 5 * 7)}px) scale(${.38 + (1 - life) * 1.05})`;
       });
-      if (!caseStarted && progress >= .7) {
+      if (!caseStarted && progress >= .58) {
         caseStarted = true;
         box.classList.add("is-opening");
         animateCase(box, onOpened);

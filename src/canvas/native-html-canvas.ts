@@ -424,8 +424,8 @@ export class NativeHtmlCanvas {
     const transitionAge = (time - this.#transitionStartedAt) / 1000;
     const transition = transitionAge >= 0 && transitionAge < 1.35 ? Math.sin((transitionAge / 1.35) * Math.PI) : 0;
     const burnAge = (time - this.#burnStartedAt) / 1000;
-    const burn = burnAge >= 0 && burnAge < 3.8
-      ? Math.min(1, burnAge / .45) * Math.min(1, (3.8 - burnAge) / .72)
+    const burn = burnAge >= 0 && burnAge < 2.65
+      ? Math.min(1, burnAge / .22) * Math.min(1, (2.65 - burnAge) / .52)
       : 0;
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
