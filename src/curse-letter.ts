@@ -69,9 +69,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   let wrongTimer = 0;
   let paintFrame = 0;
   let burnFrame = 0;
-  let driftFrame = 0;
   let answerFrame = 0;
-  let lastDriftPaint = 0;
   root.classList.add("curse-surface");
   root.dataset.phase = phase;
   root.dataset.revealed = "0";
@@ -144,27 +142,6 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     paintFrame = window.requestAnimationFrame(paintFrameByFrame);
   };
 
-  const startDrifting = (): void => {
-    if (driftFrame) return;
-    const driftInterval = root.parentElement instanceof HTMLCanvasElement ? 50 : 180;
-    const renderDrift = (now: number): void => {
-      if (now - lastDriftPaint > driftInterval) {
-        Array.from(floatingField.querySelectorAll<HTMLElement>(".floating-phrase")).forEach((word, index) => {
-          const seed = Number(word.dataset.seed ?? index);
-          const t = now / 1000;
-          const x = Math.sin(t * (.11 + seed % 3 * .012) + seed * 1.7) * (9 + seed % 4 * 2);
-          const y = Math.cos(t * .09 + seed * .83) * (2.5 + seed % 3);
-          const rotation = Math.sin(t * .08 + seed) * .28;
-          word.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
-        });
-        requestPaint();
-        lastDriftPaint = now;
-      }
-      driftFrame = window.requestAnimationFrame(renderDrift);
-    };
-    driftFrame = window.requestAnimationFrame(renderDrift);
-  };
-
   const showCorrectEffect = (phrase: string, index: number): void => {
     root.querySelector("[data-letter-line].is-current")?.classList.remove("is-current");
     root.querySelector<HTMLElement>(`[data-letter-line="${index}"]`)?.classList.add("is-revealed", "is-current");
@@ -177,9 +154,9 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     floating.style.setProperty("--float-y", `${slot < 6 ? 8 + (slot % 2) * 6 : 79 + (slot % 2) * 7}%`);
     floating.style.setProperty("--float-size", `${10.5 + (index % 3)}px`);
     floating.style.setProperty("--float-depth", `${.18 + (index % 4) * .07}`);
+    floating.style.transform = `translate(${((index * 7) % 9) - 4}px, ${((index * 5) % 5) - 2}px) rotate(${((index % 5) - 2) * .16}deg)`;
     floatingField.append(floating);
     while (floatingField.children.length > 12) floatingField.firstElementChild?.remove();
-    startDrifting();
     apparition.textContent = phrase;
     apparition.dataset.text = phrase;
     apparition.style.setProperty("--apparition-tilt", `${((index % 5) - 2) * .5}deg`);
@@ -355,7 +332,7 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   return () => {
     clearTimeout(strikeTimer); clearTimeout(wrongTimer);
     window.cancelAnimationFrame(paintFrame); window.cancelAnimationFrame(burnFrame);
-    window.cancelAnimationFrame(driftFrame); window.cancelAnimationFrame(answerFrame);
+    window.cancelAnimationFrame(answerFrame);
     input.removeEventListener("input", handleInput); input.removeEventListener("focus", handleFocus);
     input.removeEventListener("blur", handleBlur); input.removeEventListener("keydown", handleKeyDown);
     form.removeEventListener("submit", handleSubmit);
