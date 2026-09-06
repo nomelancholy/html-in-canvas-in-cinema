@@ -11,6 +11,8 @@ type ProgramLocations = {
   time: WebGLUniformLocation;
   pointer: WebGLUniformLocation;
   transition: WebGLUniformLocation;
+  burn: WebGLUniformLocation;
+  burnCenterY: WebGLUniformLocation;
   opacity: WebGLUniformLocation;
   texture: WebGLUniformLocation;
 };
@@ -23,6 +25,8 @@ const vertexSource = `#version 300 es
   uniform float uTime;
   uniform vec2 uPointer;
   uniform float uTransition;
+  uniform float uBurn;
+  uniform float uBurnCenterY;
   out vec2 vUv;
   out float vDepth;
 
@@ -33,6 +37,10 @@ const vertexSource = `#version 300 es
     float paperWave = sin(aUv.y * 8.0 + uTime * 0.72) * 0.009;
     point.z += paperWave + pulse * (0.018 + uTransition * 0.18);
     point.x += sin(aUv.y * 18.0 + uTime) * 0.018 * uTransition;
+    float burnFocus = exp(-pow((aUv.y - uBurnCenterY) * 5.2, 2.0));
+    float burnArea = smoothstep(0.66, 0.82, aUv.x) * burnFocus;
+    point.z += sin(aUv.y * 55.0 - uTime * 9.0) * 0.012 * uBurn * burnArea;
+    point.x += sin(aUv.y * 91.0 + uTime * 7.0) * 0.004 * uBurn * burnArea;
     vUv = aUv;
     vDepth = point.z;
     gl_Position = uMvp * vec4(point, 1.0);
@@ -44,6 +52,8 @@ const fragmentSource = `#version 300 es
   uniform sampler2D uTexture;
   uniform float uTime;
   uniform float uTransition;
+  uniform float uBurn;
+  uniform float uBurnCenterY;
   uniform float uOpacity;
   in vec2 vUv;
   in float vDepth;
@@ -60,7 +70,11 @@ const fragmentSource = `#version 300 es
     float timeSlice = floor(uTime * 8.0);
     float filmJitter = (hash(vec2(timeSlice, 17.0)) - 0.5) * 0.0018;
     float shockwave = sin(radius * 48.0 - uTime * 7.0) * 0.01 * uTransition;
-    vec2 warpedUv = clamp(vUv + direction * shockwave + vec2(filmJitter, 0.0), 0.002, 0.998);
+    float burnFocus = exp(-pow((vUv.y - uBurnCenterY) * 5.0, 2.0));
+    float heatArea = smoothstep(0.62, 0.76, vUv.x) * burnFocus;
+    float heatRipple = sin(vUv.y * 96.0 + uTime * 14.0) + sin(vUv.y * 43.0 - uTime * 9.0) * 0.45;
+    vec2 heatWarp = vec2(heatRipple * 0.0026, sin(vUv.x * 37.0 + uTime * 8.0) * 0.0014) * uBurn * heatArea;
+    vec2 warpedUv = clamp(vUv + direction * shockwave + vec2(filmJitter, 0.0) + heatWarp, 0.002, 0.998);
     vec4 base = texture(uTexture, warpedUv);
     float grain = hash(floor(vUv * vec2(360.0, 240.0)) + timeSlice);
     float flicker = 0.955 + hash(vec2(timeSlice, 9.0)) * 0.045;
@@ -70,6 +84,8 @@ const fragmentSource = `#version 300 es
     vec3 moonTint = vec3(0.93, 0.95, 0.9);
     vec3 vermilion = vec3(0.24, 0.008, 0.004) * (inkBloom * 0.7 + max(vDepth, 0.0) * 0.25);
     vec3 cursed = base.rgb * moonTint * (flicker + (grain - 0.5) * 0.045) + vermilion;
+    cursed *= 1.0 - uBurn * 0.22 * (1.0 - heatArea);
+    cursed += vec3(0.24, 0.045, 0.006) * uBurn * heatArea * (0.24 + grain * 0.4);
     outColor = vec4(cursed * edge, base.a * edge * uOpacity);
   }
 `;
@@ -94,6 +110,8 @@ export class NativeHtmlCanvas {
   #frameId = 0;
   #startedAt = performance.now();
   #transitionStartedAt = -Infinity;
+  #burnStartedAt = -Infinity;
+  #burnCenterY = 0.25;
   #pointer = { x: 0.5, y: 0.5 };
   #pointerTarget = { x: 0.5, y: 0.5 };
   #resizeObserver: ResizeObserver;
@@ -128,6 +146,7 @@ export class NativeHtmlCanvas {
     this.#canvas.addEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.addEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.addEventListener("canvas:disturb", this.#handleTransition);
+    this.#element.addEventListener("canvas:burn", this.#handleBurn);
     this.#element.addEventListener("canvas:paint-frame", this.#handlePaintFrame);
     this.#resize();
     if (mode === "native") {
@@ -148,6 +167,7 @@ export class NativeHtmlCanvas {
     this.#canvas.removeEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.removeEventListener("pointerleave", this.#handlePointerLeave);
     this.#element.removeEventListener("canvas:disturb", this.#handleTransition);
+    this.#element.removeEventListener("canvas:burn", this.#handleBurn);
     this.#element.removeEventListener("canvas:paint-frame", this.#handlePaintFrame);
     this.#mutationObserver?.disconnect();
     this.#snapshotHost?.remove();
@@ -177,6 +197,8 @@ export class NativeHtmlCanvas {
       time: uniform("uTime"),
       pointer: uniform("uPointer"),
       transition: uniform("uTransition"),
+      burn: uniform("uBurn"),
+      burnCenterY: uniform("uBurnCenterY"),
       opacity: uniform("uOpacity"),
       texture: uniform("uTexture"),
     };
@@ -265,6 +287,11 @@ export class NativeHtmlCanvas {
     }
   };
   #handleTransition = (): void => { this.#transitionStartedAt = performance.now(); };
+  #handleBurn = (event: Event): void => {
+    const boxIndex = Number((event as CustomEvent<{ boxIndex?: number }>).detail?.boxIndex ?? 0);
+    this.#burnCenterY = boxIndex === 0 ? .25 : .75;
+    this.#burnStartedAt = performance.now();
+  };
 
   #handlePaintFrame = (): void => {
     if (this.#mode === "native") this.#canvas.requestPaint();
@@ -384,6 +411,10 @@ export class NativeHtmlCanvas {
     const elapsed = (time - this.#startedAt) / 1000;
     const transitionAge = (time - this.#transitionStartedAt) / 1000;
     const transition = transitionAge >= 0 && transitionAge < 1.35 ? Math.sin((transitionAge / 1.35) * Math.PI) : 0;
+    const burnAge = (time - this.#burnStartedAt) / 1000;
+    const burn = burnAge >= 0 && burnAge < 3.8
+      ? Math.min(1, burnAge / .45) * Math.min(1, (3.8 - burnAge) / .72)
+      : 0;
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.BLEND);
@@ -397,6 +428,8 @@ export class NativeHtmlCanvas {
     gl.uniform1f(this.#locations.time, elapsed);
     gl.uniform2f(this.#locations.pointer, this.#pointer.x, this.#pointer.y);
     gl.uniform1f(this.#locations.transition, transition);
+    gl.uniform1f(this.#locations.burn, burn);
+    gl.uniform1f(this.#locations.burnCenterY, this.#burnCenterY);
 
     const projection = mat4.create();
     const view = mat4.create();

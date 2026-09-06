@@ -37,7 +37,7 @@ const surfaceMarkup = (): string => `
           <span class="case-latch"></span><span class="case-dust"><i></i><i></i><i></i><i></i><i></i><i></i></span>
         </span>
         <span class="box-seal" aria-hidden="true"></span>
-        <span class="seal-fire" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="seal-fire" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
       </div>
       <div class="relic-box" data-box="1" aria-label="문장 암호로 봉인된 두 번째 함">
         <span class="screen-frame" aria-hidden="true">
@@ -46,11 +46,12 @@ const surfaceMarkup = (): string => `
           <span class="case-latch"></span><span class="case-dust"><i></i><i></i><i></i><i></i><i></i><i></i></span>
         </span>
         <span class="box-seal" aria-hidden="true"></span>
-        <span class="seal-fire" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="seal-fire" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
       </div>
     </div>
     <div class="floating-field" aria-hidden="true"></div>
     <p class="answer-apparition" aria-hidden="true"></p>
+    <span class="burn-cinema" aria-hidden="true"></span>
   </div>
 `;
 
@@ -74,7 +75,8 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   const boxes = Array.from(root.querySelectorAll<HTMLElement>(".relic-box"));
   const apparition = root.querySelector<HTMLElement>(".answer-apparition");
   const floatingField = root.querySelector<HTMLElement>(".floating-field");
-  if (!form || !input || boxes.length !== 2 || !apparition || !floatingField) {
+  const burnCinema = root.querySelector<HTMLElement>(".burn-cinema");
+  if (!form || !input || boxes.length !== 2 || !apparition || !floatingField || !burnCinema) {
     throw new Error("저주의 편지 입력 UI를 만들지 못했습니다.");
   }
   input.inputMode = "numeric";
@@ -214,28 +216,40 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     if (!box || !seal || !fire) return;
     root.classList.add("is-complete", "is-burning");
     box.classList.add("is-unlocked");
+    burnCinema.style.setProperty("--burn-focus-y", boxIndex === 0 ? "25%" : "75%");
+    root.dispatchEvent(new CustomEvent("canvas:burn", { detail: { boxIndex } }));
     let caseStarted = false;
-    const duration = 2100;
+    const duration = 2800;
     const startedAt = performance.now();
     const burn = (now: number): void => {
       const progress = Math.min(1, (now - startedAt) / duration);
-      const edge = Math.min(100, progress * 112);
-      seal.style.clipPath = `inset(${edge}% 0 0 0)`;
-      seal.style.filter = `saturate(${1 + progress * 1.6}) brightness(${1.08 + Math.sin(progress * Math.PI) * .9}) contrast(${1 + progress * .45}) drop-shadow(0 0 ${4 + progress * 11}px rgba(190,42,9,.85))`;
-      fire.style.top = `${-11 + Math.min(100, edge) * 2.2}px`;
-      fire.style.opacity = String(progress < .92 ? Math.min(1, progress * 6) : (1 - progress) * 12.5);
-      fire.querySelectorAll<HTMLElement>("i").forEach((flame, index) => {
-        const flutter = Math.sin(now * .015 + index * 1.8);
-        flame.style.transform = `translateX(${flutter * (3 + index)}px) scaleY(${.74 + (flutter + 1) * .22}) rotate(${flutter * 7}deg)`;
+      const charEdge = Math.max(0, 100 - progress * 112);
+      const edgeAt = (offset: number): number => Math.max(0, Math.min(100, charEdge + Math.sin(now * .011 + offset) * (2.8 - progress * 1.7)));
+      seal.style.clipPath = `polygon(0 0,100% 0,100% ${edgeAt(1)}%,88% ${edgeAt(2.4)}%,73% ${edgeAt(4.1)}%,57% ${edgeAt(5.8)}%,41% ${edgeAt(7.2)}%,25% ${edgeAt(8.9)}%,11% ${edgeAt(10.5)}%,0 ${edgeAt(12)}%)`;
+      const flare = Math.sin(progress * Math.PI);
+      seal.style.filter = `sepia(${.12 + progress * .68}) saturate(${1.04 - progress * .5}) brightness(${1.02 + flare * .34 - progress * .18}) contrast(${1.02 + progress * .72}) drop-shadow(0 0 ${3 + flare * 8}px rgba(150,34,8,.72))`;
+      fire.style.top = `${-11 + charEdge * 2.2}px`;
+      fire.style.opacity = String(progress < .9 ? Math.min(.92, progress * 4.5) : (1 - progress) * 9.2);
+      burnCinema.style.opacity = String(Math.sin(progress * Math.PI) * .78);
+      fire.querySelectorAll<HTMLElement>("i").forEach((ember, index) => {
+        const life = (progress * 3.1 + index * .137) % 1;
+        const drift = Math.sin(now * .009 + index * 2.1) * (5 + index % 4);
+        ember.style.opacity = String(Math.sin(life * Math.PI) * (1 - progress * .45));
+        ember.style.transform = `translate(${drift}px, ${-8 - life * (24 + index % 5 * 5)}px) scale(${.45 + (1 - life) * .85})`;
       });
-      if (!caseStarted && progress >= .54) {
+      if (!caseStarted && progress >= .7) {
         caseStarted = true;
         box.classList.add("is-opening");
         animateCase(box, onOpened);
       }
       requestPaint();
       if (progress < 1) burnFrame = window.requestAnimationFrame(burn);
-      else { seal.classList.add("is-gone"); root.classList.remove("is-burning"); requestPaint(); }
+      else {
+        seal.classList.add("is-gone");
+        burnCinema.style.opacity = "0";
+        root.classList.remove("is-burning");
+        requestPaint();
+      }
     };
     burnFrame = window.requestAnimationFrame(burn);
   };
