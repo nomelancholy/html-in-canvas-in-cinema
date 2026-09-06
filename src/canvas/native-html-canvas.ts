@@ -337,7 +337,7 @@ export class NativeHtmlCanvas {
       childList: true,
       characterData: true,
       attributes: true,
-      attributeFilter: ["class", "disabled", "value", "placeholder", "data-revealed"],
+      attributeFilter: ["class", "disabled", "value", "placeholder", "data-revealed", "data-phase"],
     });
     this.#queueSnapshot();
   }
@@ -350,6 +350,11 @@ export class NativeHtmlCanvas {
     }
     this.#snapshotPending = true;
     this.#snapshotSource.className = this.#element.className;
+    for (const name of ["data-phase", "data-revealed"]) {
+      const value = this.#element.getAttribute(name);
+      if (value === null) this.#snapshotSource.removeAttribute(name);
+      else this.#snapshotSource.setAttribute(name, value);
+    }
     this.#snapshotSource.innerHTML = this.#element.innerHTML;
     void toCanvas(this.#snapshotSource, {
       width: this.#sourceWidth,

@@ -1,6 +1,6 @@
 # HTML in Canvas in Cinema
 
-서른 개의 문구를 순서대로 맞히면 낡은 한지 위의 주문이 한 줄씩 깨어나는 한국 괴담풍 HTML-in-Canvas 실험입니다. 정답 순간에는 입력한 문구가 크게 나타나고, 해금된 문장들이 화면 곳곳을 유령처럼 떠다닙니다. 마지막 문구까지 완성하면 별도 클릭 없이 부적이 불타고 함이 열리며 영상이 전체화면으로 이어집니다. 실제 입력 DOM과 함의 앞면·안쪽·경첩·잠금쇠·불꽃을 WebGL 텍스처로 올려 종이의 움직임, 먹 번짐, 필름 떨림을 표현하며 웹과 Electron 데스크톱 앱 두 경로를 함께 제공합니다.
+두 개의 암호로 봉인된 함을 차례로 여는 한국 괴담풍 HTML-in-Canvas 실험입니다. 먼저 숫자 암호 `1208`을 맞히면 첫 번째 부적이 불타고 위 함의 영상이 전체화면으로 열립니다. 이어 서른 개의 문구를 순서대로 맞히면 낡은 한지 위의 주문이 한 줄씩 깨어나고, 마지막 문구 뒤에는 아래 함이 자동으로 열립니다. 정답 순간의 먹 번짐 잔상과 주변을 흐르는 문구, 함의 앞면·안쪽·경첩·잠금쇠·불꽃은 실제 HTML 조각이며 WebGL Canvas에 프레임별로 합성됩니다.
 
 ## 시작하기
 
@@ -17,6 +17,7 @@ Chrome Canary 149 이상에서 `chrome://flags/#canvas-draw-element`를 열고 *
 
 ```ts
 window.hicVideoPortal?.setRemoteStream(0, remoteStream);
+window.hicVideoPortal?.setRemoteStream(1, anotherRemoteStream);
 ```
 
 ## Electron으로 실행

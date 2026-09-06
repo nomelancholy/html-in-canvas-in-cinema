@@ -29,8 +29,17 @@ const surfaceMarkup = (): string => `
       <div class="red-thread" aria-hidden="true"></div>
       <div class="scan-tear" aria-hidden="true"></div>
     </section>
-    <div class="relic-boxes" aria-label="부적으로 봉인된 함">
-      <div class="relic-box" data-box="0" aria-label="봉인된 함">
+    <div class="relic-boxes" aria-label="부적으로 봉인된 두 개의 함">
+      <div class="relic-box" data-box="0" aria-label="숫자 암호로 봉인된 첫 번째 함">
+        <span class="screen-frame" aria-hidden="true">
+          <span class="screen-static"></span><span class="case-hinges"><i></i><i></i></span>
+          <span class="case-lid"><span class="case-lid-face"></span><span class="case-lid-back"></span><span class="case-lid-edge"></span></span>
+          <span class="case-latch"></span><span class="case-dust"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        </span>
+        <span class="box-seal" aria-hidden="true"></span>
+        <span class="seal-fire" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+      <div class="relic-box" data-box="1" aria-label="문장 암호로 봉인된 두 번째 함">
         <span class="screen-frame" aria-hidden="true">
           <span class="screen-static"></span><span class="case-hinges"><i></i><i></i></span>
           <span class="case-lid"><span class="case-lid-face"></span><span class="case-lid-back"></span><span class="case-lid-edge"></span></span>
@@ -46,6 +55,7 @@ const surfaceMarkup = (): string => `
 `;
 
 export const mountCurseLetter = (root: HTMLElement): (() => void) => {
+  let phase: "pin" | "phrases" | "complete" = "pin";
   let revealed = 0;
   let strikeTimer = 0;
   let wrongTimer = 0;
@@ -55,19 +65,21 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   let answerFrame = 0;
   let lastDriftPaint = 0;
   root.classList.add("curse-surface");
+  root.dataset.phase = phase;
   root.dataset.revealed = "0";
   root.innerHTML = surfaceMarkup();
 
   const form = root.querySelector<HTMLFormElement>(".writing-form");
   const input = root.querySelector<HTMLInputElement>("#sentence-input");
-  const box = root.querySelector<HTMLElement>(".relic-box");
-  const seal = root.querySelector<HTMLElement>(".box-seal");
-  const fire = root.querySelector<HTMLElement>(".seal-fire");
+  const boxes = Array.from(root.querySelectorAll<HTMLElement>(".relic-box"));
   const apparition = root.querySelector<HTMLElement>(".answer-apparition");
   const floatingField = root.querySelector<HTMLElement>(".floating-field");
-  if (!form || !input || !box || !seal || !fire || !apparition || !floatingField) {
+  if (!form || !input || boxes.length !== 2 || !apparition || !floatingField) {
     throw new Error("저주의 편지 입력 UI를 만들지 못했습니다.");
   }
+  input.inputMode = "numeric";
+  input.maxLength = 4;
+  input.setAttribute("aria-label", "숫자 암호 입력");
 
   const requestPaint = (): void => {
     const canvas = root.parentElement;
@@ -75,14 +87,14 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     else root.dispatchEvent(new CustomEvent("canvas:paint-frame"));
   };
 
-  const openPortal = (): void => {
+  const openPortal = (box: HTMLElement, channel: number): void => {
     const bounds = box.getBoundingClientRect();
     window.dispatchEvent(new CustomEvent("portal:open", { detail: {
-      channel: 0, rect: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
+      channel, rect: { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height },
     } }));
   };
 
-  const animateCase = (onComplete: () => void): void => {
+  const animateCase = (box: HTMLElement, onComplete: () => void): void => {
     window.cancelAnimationFrame(paintFrame);
     const frame = box.querySelector<HTMLElement>(".screen-frame");
     const screen = box.querySelector<HTMLElement>(".screen-static");
@@ -129,9 +141,9 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
         Array.from(floatingField.querySelectorAll<HTMLElement>(".floating-phrase")).forEach((word, index) => {
           const seed = Number(word.dataset.seed ?? index);
           const t = now / 1000;
-          const x = Math.sin(t * (.22 + seed % 4 * .035) + seed * 1.7) * (7 + seed % 6);
-          const y = Math.cos(t * (.16 + seed % 5 * .024) + seed * .83) * (5 + seed % 5);
-          const rotation = Math.sin(t * .13 + seed) * 1.8;
+          const x = Math.sin(t * .18 + seed * 1.7) * 3.5;
+          const y = Math.cos(t * .12 + seed * .83) * 7;
+          const rotation = Math.sin(t * .1 + seed) * .45;
           word.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
         });
         requestPaint();
@@ -149,12 +161,15 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     floating.className = "floating-phrase";
     floating.textContent = phrase;
     floating.dataset.seed = String(index + 1);
-    floating.style.setProperty("--float-x", `${8 + ((index * 37) % 78)}%`);
-    floating.style.setProperty("--float-y", `${9 + ((index * 53) % 76)}%`);
-    floating.style.setProperty("--float-size", `${12 + (index % 4) * 2}px`);
+    const slot = index % 10;
+    floating.style.setProperty("--float-x", `${slot % 2 === 0 ? 3 : 76}%`);
+    floating.style.setProperty("--float-y", `${9 + Math.floor(slot / 2) * 18}%`);
+    floating.style.setProperty("--float-size", `${11 + (index % 3)}px`);
     floatingField.append(floating);
+    while (floatingField.children.length > 10) floatingField.firstElementChild?.remove();
     startDrifting();
     apparition.textContent = phrase;
+    apparition.dataset.text = phrase;
     apparition.style.setProperty("--apparition-tilt", `${((index % 5) - 2) * .5}deg`);
     window.cancelAnimationFrame(answerFrame);
     const startedAt = performance.now();
@@ -179,7 +194,24 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     strikeTimer = window.setTimeout(() => { root.classList.remove("is-answering", "is-struck"); requestPaint(); }, 1280);
   };
 
-  const burnSealAndOpen = (): void => {
+  const enterPhrasePhase = (): void => {
+    phase = "phrases";
+    root.dataset.phase = phase;
+    root.classList.remove("is-complete", "is-burning", "is-wrong", "is-pin-opening");
+    input.disabled = false;
+    input.inputMode = "text";
+    input.maxLength = 50;
+    input.value = "";
+    input.setAttribute("value", "");
+    input.setAttribute("aria-label", "다음 문구 입력");
+    requestPaint();
+  };
+
+  const burnSealAndOpen = (boxIndex: number, onOpened: () => void): void => {
+    const box = boxes[boxIndex];
+    const seal = box?.querySelector<HTMLElement>(".box-seal");
+    const fire = box?.querySelector<HTMLElement>(".seal-fire");
+    if (!box || !seal || !fire) return;
     root.classList.add("is-complete", "is-burning");
     box.classList.add("is-unlocked");
     let caseStarted = false;
@@ -190,13 +222,17 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
       const edge = Math.min(100, progress * 112);
       seal.style.clipPath = `inset(${edge}% 0 0 0)`;
       seal.style.filter = `saturate(${1 + progress * 1.6}) brightness(${1.08 + Math.sin(progress * Math.PI) * .9}) contrast(${1 + progress * .45}) drop-shadow(0 0 ${4 + progress * 11}px rgba(190,42,9,.85))`;
-      fire.style.top = `${-18 + Math.min(100, edge) * 3.22}px`;
+      fire.style.top = `${-11 + Math.min(100, edge) * 2.2}px`;
       fire.style.opacity = String(progress < .92 ? Math.min(1, progress * 6) : (1 - progress) * 12.5);
       fire.querySelectorAll<HTMLElement>("i").forEach((flame, index) => {
         const flutter = Math.sin(now * .015 + index * 1.8);
         flame.style.transform = `translateX(${flutter * (3 + index)}px) scaleY(${.74 + (flutter + 1) * .22}) rotate(${flutter * 7}deg)`;
       });
-      if (!caseStarted && progress >= .54) { caseStarted = true; box.classList.add("is-opening"); animateCase(openPortal); }
+      if (!caseStarted && progress >= .54) {
+        caseStarted = true;
+        box.classList.add("is-opening");
+        animateCase(box, onOpened);
+      }
       requestPaint();
       if (progress < 1) burnFrame = window.requestAnimationFrame(burn);
       else { seal.classList.add("is-gone"); root.classList.remove("is-burning"); requestPaint(); }
@@ -219,6 +255,29 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
   const handleSubmit = (event: SubmitEvent): void => {
     event.preventDefault();
     const written = input.value.trim();
+    if (phase === "pin") {
+      if (normalizeAnswer(written) !== "1208") {
+        input.setAttribute("aria-invalid", "true");
+        root.classList.remove("is-wrong"); void root.offsetWidth; root.classList.add("is-wrong");
+        root.dispatchEvent(new CustomEvent("canvas:disturb"));
+        clearTimeout(wrongTimer);
+        wrongTimer = window.setTimeout(() => { root.classList.remove("is-wrong"); requestPaint(); }, 520);
+        input.select(); requestPaint(); return;
+      }
+      input.disabled = true;
+      input.value = "";
+      input.setAttribute("value", "");
+      apparition.textContent = "一二〇八";
+      apparition.dataset.text = "一二〇八";
+      root.classList.add("is-pin-opening");
+      burnSealAndOpen(0, () => {
+        enterPhrasePhase();
+        openPortal(boxes[0], 0);
+      });
+      requestPaint();
+      return;
+    }
+    if (phase !== "phrases") return;
     const expected = PASS_PHRASES[revealed];
     if (!written || !expected || normalizeAnswer(written) !== normalizeAnswer(expected)) {
       input.setAttribute("aria-invalid", "true");
@@ -233,7 +292,12 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     root.dataset.revealed = String(revealed);
     root.classList.add("has-revealed");
     input.value = ""; input.setAttribute("value", ""); input.removeAttribute("aria-invalid"); root.classList.remove("has-writing");
-    if (revealed === PASS_PHRASES.length) { input.disabled = true; burnSealAndOpen(); }
+    if (revealed === PASS_PHRASES.length) {
+      phase = "complete";
+      root.dataset.phase = phase;
+      input.disabled = true;
+      burnSealAndOpen(1, () => openPortal(boxes[1], 1));
+    }
     requestPaint();
   };
 
