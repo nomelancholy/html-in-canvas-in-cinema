@@ -153,7 +153,6 @@ export const mountCurseLetter = (root: HTMLElement): (() => void) => {
     floating.style.setProperty("--float-y", `${9 + ((index * 53) % 76)}%`);
     floating.style.setProperty("--float-size", `${12 + (index % 4) * 2}px`);
     floatingField.append(floating);
-    while (floatingField.children.length > 15) floatingField.firstElementChild?.remove();
     startDrifting();
     apparition.textContent = phrase;
     apparition.style.setProperty("--apparition-tilt", `${((index % 5) - 2) * .5}deg`);
