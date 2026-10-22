@@ -153,13 +153,13 @@ a { color: inherit; text-decoration: none; }
   font: 600 19px/1.45 "AppleMyungjo", "Batang", serif; text-align: center; letter-spacing: -.035em;
   text-shadow: 0 1px rgba(245,225,177,.32), 0 0 11px rgba(115,10,5,.18); }
 .letter-field { inset: 87px 39px 76px; }
-.letter-field ol { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: baseline; gap: 7px 10px; }
-.letter-field li { display: flex; flex: 0 0 auto; align-items: baseline; min-width: 0; min-height: 25px; padding: 0 1px; border: 0;
+.letter-field ol { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: baseline; gap: 3px 8px; }
+.letter-field li { display: flex; flex: 0 0 auto; align-items: baseline; min-width: 0; min-height: 20px; padding: 0 1px; border: 0;
   visibility: hidden;
   transform: translateY(3px) rotate(calc((var(--line) - 15) * .009deg)); }
 .letter-field li.is-revealed { visibility: visible; opacity: .9; }
 .letter-field li.is-current { opacity: 1; transform: translateY(0) scale(1.035); }
-.letter-field li p { overflow: visible; font-size: 18px; line-height: 1.42; letter-spacing: -.03em; white-space: nowrap; }
+.letter-field li p { overflow: visible; font-size: 14.5px; line-height: 1.35; letter-spacing: -.025em; white-space: nowrap; }
 .relic-boxes { display: grid; grid-template-rows: repeat(2, 198px); gap: 24px; place-items: stretch; width: 300px; height: 420px; }
 .relic-box { position: relative; width: 300px; height: 198px; padding: 0; border: 0; outline: 0; background: transparent;
   perspective: 900px; transform-style: preserve-3d; filter: grayscale(.1) brightness(.88) contrast(1.08);
